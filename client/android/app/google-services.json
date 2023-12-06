@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "936424476577",
+    "project_id": "myvanam-72c4d",
+    "storage_bucket": "myvanam-72c4d.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:936424476577:android:1e06e3381eb80923e585e0",
+        "android_client_info": {
+          "package_name": "com.myvanam.my_vanam"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "936424476577-fevikk0jujqpi8ustehj3oc9kpolg243.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.myvanam.my_vanam",
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+          }
+        },
+        {
+          "client_id": "936424476577-femae4e8tuslpm8rk9adpcr6bknt4kch.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCRvBq8nbhieTc6HPX58JivPogprOljbps"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "936424476577-femae4e8tuslpm8rk9adpcr6bknt4kch.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

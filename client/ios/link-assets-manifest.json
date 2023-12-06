@@ -1,0 +1,21 @@
+{
+  "migIndex": 1,
+  "data": [
+    {
+      "path": "assets/fonts/Noto Sans Bold.ttf",
+      "sha1": "563bd982ccf5b05c6234c40a5758dda2f19160fb"
+    },
+    {
+      "path": "assets/fonts/Noto Sans.ttf",
+      "sha1": "830953c678e6a50697108a9c87d229cef130975a"
+    },
+    {
+      "path": "assets/fonts/Poppins-Bold.ttf",
+      "sha1": "3bc8164396c3e6c1e4fae0cf2a51ea66381c1c2d"
+    },
+    {
+      "path": "assets/fonts/Poppins-Regular.ttf",
+      "sha1": "52f9413b264e8ecefbbf12830e3dfadebbf72986"
+    }
+  ]
+}
