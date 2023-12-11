@@ -32,7 +32,6 @@ const UserDashBoard = () => {
         dispatch(getAllNamesAction(userId));
       }
       if (Role === "organizer") {
-        console.log("workingggg");
         dispatch(getAllAttedence(userId));
       }
       if (Role !== null) {

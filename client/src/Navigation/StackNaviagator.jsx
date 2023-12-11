@@ -23,6 +23,7 @@ const StackNaviagator = () => {
   const Tab = createBottomTabNavigator();
   const Stack = createStackNavigator();
   const [isLoggedIn, set] = useState(false);
+  const [role, setRole] = useState(false);
 
   const { loginData, showSplash, isLoading } = useSelector(
     (state) => state.eventAuth
@@ -31,9 +32,13 @@ const StackNaviagator = () => {
   const readData = async () => {
     try {
       const value = await AsyncStorage.getItem("token");
+      const Role = await AsyncStorage.getItem("userRole");
 
       if (value !== null) {
         set(true);
+      }
+      if (Role !== null) {
+        setRole(Role);
       }
     } catch (e) {
       alert("Failed to fetch the input from storage");
@@ -70,11 +75,7 @@ const StackNaviagator = () => {
               options={{
                 headerLeft: () => <HeaderLeft type={"dashboard"} />,
                 headerRight: () => (
-                  <HeaderRight
-                    set={set}
-                    type={"dashboard"}
-                    role={loginData.userRole}
-                  />
+                  <HeaderRight set={set} type={"dashboard"} role={role} />
                 ),
                 headerTitle: () => (
                   <Header color={"#eebf80"} name={"Dashboard"} />

@@ -9,6 +9,7 @@ const attedenceSchema = new mongoose.Schema({
   attedence: { type: Boolean },
   reason: { type: String },
   id: { type: String, require: true },
+  eventId: { type: String },
 });
 
 const eventSchema = new mongoose.Schema({
@@ -21,6 +22,8 @@ const eventSchema = new mongoose.Schema({
   allDay: { type: Boolean, default: false },
   location: { type: String },
   repeat: { type: String },
+  eventId: { type: String },
+  userAttendence: { type: Boolean },
 });
 const profileSchema = new mongoose.Schema({
   id: { type: String, required: true },

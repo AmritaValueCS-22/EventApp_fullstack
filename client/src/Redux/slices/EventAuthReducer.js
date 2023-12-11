@@ -23,7 +23,7 @@ const initialState = {
 export const signupAction = createAsyncThunk(
   "eventauth/eventSignup",
   async (body) => {
-    const response = await fetch("http://123.63.2.13:3000/auth/signup", {
+    const response = await fetch("http://192.168.56.1:5000/auth/signup", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -52,7 +52,7 @@ export const profileAction = createAsyncThunk(
   "eventauth/eventLogin",
   async (body) => {
     const response = await fetch(
-      "http://123.63.2.13:3000/profile/add-profile",
+      "http://192.168.56.1:5000/profile/add-profile",
       {
         method: "POST",
         headers: {
@@ -88,7 +88,7 @@ export const AddProfileAction = createAsyncThunk(
       Authorization: body.token,
     };
     const response = await fetch(
-      "http://123.63.2.13:3000/profile/add-profile",
+      "http://192.168.56.1:5000/profile/add-profile",
       {
         method: "POST",
         headers,
@@ -117,7 +117,7 @@ export const getUserDetailsAction = createAsyncThunk(
   "eventauth/userDetails",
   async (userId) => {
     const response = await fetch(
-      `http://123.63.2.13:3000/user/userDetails?userId=${userId}`,
+      `http://192.168.56.1:5000/user/userDetails?userId=${userId}`,
       {
         method: "GET",
         headers: {
@@ -146,7 +146,7 @@ export const getUserDetailsAction = createAsyncThunk(
 export const addEventAction = createAsyncThunk(
   "eventauth/addEvent",
   async (body) => {
-    const response = await fetch("http://123.63.2.13:3000/events/add-event", {
+    const response = await fetch("http://192.168.56.1:5000/events/add-event", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -175,7 +175,7 @@ export const addEventAction = createAsyncThunk(
 export const loginAction = createAsyncThunk(
   "eventauth/eventLogin",
   async (body) => {
-    const response = await fetch("http://123.63.2.13:3000/auth/login", {
+    const response = await fetch("http://192.168.56.1:5000/auth/login", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -207,7 +207,7 @@ export const getAllNamesAction = createAsyncThunk(
   "eventauth/userNames",
   async (userId) => {
     const response = await fetch(
-      `http://123.63.2.13:3000/user/userName?userId=${userId}`,
+      `http://192.168.56.1:5000/user/userName?userId=${userId}`,
       {
         method: "GET",
         headers: {
@@ -236,14 +236,17 @@ export const getAllNamesAction = createAsyncThunk(
 export const addAttedence = createAsyncThunk(
   "eventauth/addAttedence",
   async (body) => {
-    const response = await fetch("http://123.63.2.13:3000/user/attedence/add", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: body.token,
-      },
-      body: JSON.stringify(body),
-    });
+    const response = await fetch(
+      "http://192.168.56.1:5000/user/attedence/add",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: body.token,
+        },
+        body: JSON.stringify(body),
+      }
+    );
     const result = await response.json();
 
     if (result.statuscode === 200) {
@@ -266,7 +269,7 @@ export const getAllAttedence = createAsyncThunk(
   "eventauth/getAttedence",
   async (userId) => {
     const response = await fetch(
-      `http://123.63.2.13:3000/user/attedence/getAttedence?userId=${userId}`,
+      `http://192.168.56.1:5000/user/attedence/getAttedence?userId=${userId}`,
       {
         method: "GET",
         headers: {
@@ -296,7 +299,7 @@ export const createProfileAction = createAsyncThunk(
   "eventauth/createprofile",
   async (body) => {
     const response = await fetch(
-      `http://123.63.2.13:3000/profile/add-profile`,
+      `http://192.168.56.1:5000/profile/add-profile`,
       {
         method: "POST",
         headers: {
@@ -328,7 +331,7 @@ export const deleteProfileAction = createAsyncThunk(
   "eventauth/deleteProfile",
   async (body) => {
     const response = await fetch(
-      `http://123.63.2.13:3000/profile/deleteProfile/${body.userId}?id=${body.id}`,
+      `http://192.168.56.1:5000/profile/deleteProfile/${body.userId}?id=${body.id}`,
       {
         method: "DELETE",
         headers: {
@@ -358,7 +361,7 @@ export const editProfileAction = createAsyncThunk(
   "eventauth/editProfile",
   async (body) => {
     const response = await fetch(
-      `http://123.63.2.13:3000/profile/editProfile/${body.userId}`,
+      `http://192.168.56.1:5000/profile/editProfile/${body.userId}`,
       {
         method: "PUT",
         headers: {

@@ -68,7 +68,7 @@ function Event() {
     isuserRole.forEach((event) => {
       const dates = getDifferDate(event.startDate, event.endDate);
       const currentDate = moment().format("YYYY-MM-DD");
-
+      console.log(event, "evenet");
       dates.forEach((date) => {
         if (!result[date]) {
           result[date] = [];
@@ -82,6 +82,7 @@ function Event() {
           startDate: event.startDate,
           endDate: event.endDate,
           isLog: moment(currentDate).isSame(moment(date)) ? true : false,
+          eventId: event.eventId,
         });
       });
     });
@@ -139,12 +140,13 @@ function Event() {
             ? ""
             : state.reason === "Other reason"
             ? state.otherReason
-            : reason[state.selectedReason].reason,
+            : state.reason,
           attedence: checked,
           id: route.params.id,
           token: value,
+          eventId: state.items.eventId,
         };
-
+        console.log(state, "etetetet");
         dispatch(addAttedence(newAttedence));
         setState((prev) => ({
           ...prev,

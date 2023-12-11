@@ -49,7 +49,7 @@ export const HeaderRight = ({ type, set, role }) => {
   useEffect(() => {
     getName();
   }, []);
-  console.log(name);
+  console.log(role, "role");
 
   const onLogOut = async () => {
     await AsyncStorage.removeItem("token");

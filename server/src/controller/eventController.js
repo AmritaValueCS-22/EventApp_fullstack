@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import moment from "moment";
 import User from "../model/userSchema.js";
 import { StatusCodes } from "http-status-codes";
+import { generateUniqueId } from "../helper/index.js";
 
 export const addEvent = async (req, res) => {
   try {
@@ -50,6 +51,8 @@ export const addEvent = async (req, res) => {
       allDay,
       location,
       repeat,
+      eventId: generateUniqueId(),
+      userAttendence: false,
     };
     console.log(newEvent);
     let events = [];
