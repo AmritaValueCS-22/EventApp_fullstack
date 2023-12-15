@@ -5,90 +5,6 @@ import User from "../model/userSchema.js";
 import { StatusCodes } from "http-status-codes";
 import { generateUniqueId } from "../helper/index.js";
 
-// export const addEvent = async (req, res) => {
-//   try {
-//     const { userId } = req.user;
-//     const {
-//       eventName,
-//       participants, // Array of participant usernames
-//       startDate,
-//       endDate,
-//       allDay,
-//       location,
-//       startTime,
-//       endTime,
-//       repeat,
-//     } = req.body;
-
-//     // Find the organizer by userId
-//     const organizer = await User.findOne({ userId });
-
-//     if (!organizer || organizer.userRole !== "organizer") {
-//       return res.status(StatusCodes.BAD_REQUEST).json({
-//         message: "Permission denied. Only organizers can add events.",
-//         statuscode: 400,
-//       });
-//     }
-
-//     // Convert participant usernames to ObjectId
-//     const participantIds = await Promise.all(
-//       participants.map(async (participantUsername) => {
-//         const participant = await User.findOne({
-//           username: participantUsername,
-//         });
-//         return participant ? participant._id : null;
-//       })
-//     );
-
-//     // Create a new event
-//     const newEvent = {
-//       eventName,
-//       participants: participantIds,
-//       startDate,
-//       endDate,
-//       startTime,
-//       endTime,
-//       allDay,
-//       location,
-//       repeat,
-//       eventId: generateUniqueId(),
-//       userAttendence: false,
-//     };
-//     console.log(newEvent);
-//     let events = [];
-
-//     // Add the event to the organizer's events array
-//     organizer.events.push(newEvent);
-
-//     // Save the organizer document with the updated events array
-//     await organizer.save();
-
-//     // Share the event details with selected participants
-//     await Promise.all(
-//       participantIds.map(async (participantId) => {
-//         const participant = await User.findById(participantId);
-//         if (participant) {
-//           console.log(participant, "hello");
-//           // Update the event details for the participant
-//           participant.events.push(newEvent);
-//           await participant.save();
-//         }
-//       })
-//     );
-//     res.status(StatusCodes.CREATED).json({
-//       message: "Event added successfully",
-//       event: newEvent,
-//       statuscode: 200,
-//     });
-//   } catch (error) {
-//     console.error(error);
-//     res.status(StatusCodes.BAD_REQUEST).json({
-//       message: "Event added successfully",
-//       event: newEvent,
-//       statuscode: 400,
-//     });
-//   }
-// };
 export const addEvent = async (req, res) => {
   try {
     const { userId } = req.user;
@@ -161,6 +77,97 @@ export const addEvent = async (req, res) => {
     console.error(error);
     res.status(StatusCodes.BAD_REQUEST).json({
       message: "Event added successfully",
+      statuscode: 400,
+    });
+  }
+};
+
+export const editEvent = async (req, res) => {
+  try {
+    const { userId } = req.user;
+    const { eventId } = req.params; // Assuming eventId is passed as a parameter
+
+    const {
+      eventName,
+      participants, // Array of participant usernames
+      startDate,
+      endDate,
+      allDay,
+      location,
+      startTime,
+      endTime,
+      repeat,
+    } = req.body;
+
+    // Find the organizer by userId
+    const organizer = await User.findOne({ userId });
+
+    if (!organizer || organizer.userRole !== "organizer") {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        message: "Permission denied. Only organizers can edit events.",
+        statuscode: 400,
+      });
+    }
+
+    // Find the event to edit in the organizer's events array
+    const eventToEditIndex = organizer.events.findIndex(
+      (event) => event.eventId === eventId
+    );
+
+    if (eventToEditIndex === -1) {
+      return res.status(StatusCodes.NOT_FOUND).json({
+        message: "Event not found",
+        statuscode: 404,
+      });
+    }
+
+    // Update the event details
+    organizer.events[eventToEditIndex] = {
+      eventName,
+      participants,
+      startDate,
+      endDate,
+      startTime,
+      endTime,
+      allDay,
+      location,
+      repeat,
+      eventId,
+      userAttendence: false,
+    };
+
+    // Update events for participants
+    const participantsData = await User.find({
+      "profile.name": { $in: participants },
+    });
+
+    await Promise.all(
+      participantsData.map(async (participant) => {
+        const participantEventIndex = participant.profile.findIndex(
+          (profileItem) => participants.includes(profileItem.name)
+        );
+
+        if (participantEventIndex !== -1) {
+          participant.profile[participantEventIndex].events[eventToEditIndex] =
+            organizer.events[eventToEditIndex];
+
+          await participant.save();
+        }
+      })
+    );
+
+    // Save the updated organizer
+    await organizer.save();
+
+    res.status(StatusCodes.OK).json({
+      message: "Event updated successfully",
+      event: eventId,
+      statuscode: 200,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(StatusCodes.BAD_REQUEST).json({
+      message: "Error updating event",
       statuscode: 400,
     });
   }

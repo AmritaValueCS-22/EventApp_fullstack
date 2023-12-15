@@ -20,6 +20,7 @@ import SplashScreen from "../Screens/splashScreen";
 import LoadingScreen from "../Screens/LoadingScreen";
 import AttedenceScreen from "../Screens/AttedenceScreen";
 import BottomNavigator from "./BottomNavigator";
+import ResetPassword from "../Screens/ResetPassword";
 
 const StackNaviagator = () => {
   const Tab = createBottomTabNavigator();
@@ -30,6 +31,16 @@ const StackNaviagator = () => {
   const { loginData, showSplash, isLoading } = useSelector(
     (state) => state.eventAuth
   );
+  const config = {
+    screens: {
+      ResetPassword: "reset/:token",
+    },
+  };
+
+  const linking = {
+    prefixes: ["http://memo.com", "memo://"],
+    config,
+  };
   const readData = async () => {
     try {
       const value = await AsyncStorage.getItem("token");
@@ -50,7 +61,7 @@ const StackNaviagator = () => {
   }, [isLoading]);
 
   return (
-    <NavigationContainer>
+    <NavigationContainer linking={linking} fallback={<Text>Loading...</Text>}>
       <Stack.Navigator>
         {isLoggedIn ? (
           <>
@@ -99,6 +110,11 @@ const StackNaviagator = () => {
             <Stack.Screen
               name="SignUp"
               component={SignUpScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="ResetPassword"
+              component={ResetPassword}
               options={{ headerShown: false }}
             />
           </>

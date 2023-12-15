@@ -3,6 +3,7 @@ import User from "../model/userSchema.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
+import nodemailer from "nodemailer";
 import dotenv from "dotenv";
 import { StatusCodes } from "http-status-codes";
 dotenv.config();
@@ -142,5 +143,74 @@ export const login = async (req, res) => {
     res
       .status(StatusCodes.BAD_REQUEST)
       .json({ message: "Internal Server Error", statuscode: 400 });
+  }
+};
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: "acctprabhuk@gmail.com",
+    pass: "Ainsd$547",
+  },
+});
+const generateResetToken = () => {
+  return new Promise((resolve, reject) => {
+    const token = crypto.randomBytes(20).toString("hex");
+    const expirationTime = Date.now() + 60 * 60 * 1000; // Set expiration time to 1 hour
+
+    resolve({ token, expirationTime });
+  });
+};
+export const resetMail = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ message: "Invalid email address" });
+    }
+    const { token, expirationTime } = await generateResetToken();
+    // Send reset email
+    const mailOptions = {
+      from: "acctprabhuk@gmail.com",
+      to: email,
+      subject: "Password Reset",
+      text: `Click the following link to reset your password: memo://reset/${token}`,
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    res.status(200).json({ message: "Reset email sent successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+export const verifyToken = async (req, res) => {
+  try {
+    const { email, token, newPassword } = req.body;
+
+    // Check if the token and email match the stored values
+    const storedTokenInfo = tokenStore.get(email);
+
+    if (
+      !storedTokenInfo ||
+      storedTokenInfo.token !== token ||
+      Date.now() > storedTokenInfo.expirationTime
+    ) {
+      return res
+        .status(400)
+        .json({ message: "Invalid or expired reset token" });
+    }
+
+    // Reset password logic (replace with your own password reset implementation)
+    // For simplicity, we'll just log the new password
+    console.log(`Password reset for ${email}. New password: ${newPassword}`);
+
+    // Remove the used token from the store
+    tokenStore.delete(email);
+
+    res.status(200).json({ message: "Password reset successful" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
   }
 };
