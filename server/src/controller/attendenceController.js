@@ -1,51 +1,59 @@
 import { StatusCodes } from "http-status-codes";
 import User from "../model/userSchema.js";
 
-export const attendenceUpdate = async (req, res) => {
+export const attendanceUpdate = async (req, res) => {
   try {
     const { userId } = req.user;
-    const { eventName, id, attedence, reason, startDate, endDate } = req.body;
+    const { eventName, id, attendance, reason, startDate, endDate, eventId } =
+      req.body;
 
-    let user = await User.findOne({ userId });
-    console.log(user, req.body);
+    console.log(userId, eventName, id, attendance, reason, startDate, endDate);
+    const user = await User.findOne({ userId });
+
     if (!user) {
       return res.status(StatusCodes.BAD_REQUEST).json({
         message: "User not found",
-        statuscode: 400,
+        statuscode: StatusCodes.BAD_REQUEST,
       });
     }
 
-    user.profile.map((item) => {
-      let userAttedence = item.attedence;
+    user.profile.forEach((item) => {
       if (item.id === id) {
-        const obj = {
+        const attendanceObject = {
           eventName,
-          attedence,
+          attendance,
           reason,
           startDate,
           endDate,
           name: item.name,
           class: item.class,
         };
+        item.events.map((evt) => {
+          if (evt.eventId === eventId) {
+            evt.userAttendence = true;
+          }
+        });
         item.attedence = item.attedence || [];
-        item.attedence = [...userAttedence, obj];
+        item.attedence.push(attendanceObject);
       }
     });
+    user.pr;
 
     if (user.userRole === "participant") {
       await user.save();
-      res.status(StatusCodes.OK).json({
+
+      return res.status(StatusCodes.OK).json({
         message: "Successfully Entered",
-        statuscode: 200,
+        statuscode: StatusCodes.OK,
         userProfile: user.profile,
       });
     }
   } catch (error) {
     console.error(error);
 
-    res.status(StatusCodes.BAD_REQUEST).json({
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
       message: "Internal Server Error",
-      statuscode: 400,
+      statuscode: StatusCodes.INTERNAL_SERVER_ERROR,
     });
   }
 };

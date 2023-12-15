@@ -14,11 +14,11 @@ const attedenceSchema = new mongoose.Schema({
 
 const eventSchema = new mongoose.Schema({
   eventName: { type: String, required: true },
-  participants: [{ type: mongoose.Schema.Types.ObjectId, ref: "username" }],
-  startDate: { type: Date, required: true },
-  endDate: { type: Date, required: true },
-  startTime: { type: String, required: true },
-  endTime: { type: String, required: true },
+  participants: [],
+  startDate: { type: Date, required: false },
+  endDate: { type: Date, required: false },
+  startTime: { type: String, required: false },
+  endTime: { type: String, required: false },
   allDay: { type: Boolean, default: false },
   location: { type: String },
   repeat: { type: String },

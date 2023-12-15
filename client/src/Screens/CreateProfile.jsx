@@ -95,7 +95,7 @@ const CreateProfile = () => {
       readData();
     });
   }, [navigation]);
-  console.log(userDetails.user, "helooodddddddddddd");
+
   return (
     <View>
       <View
@@ -175,10 +175,11 @@ const CreateProfile = () => {
                               "userName",
                               item.name === undefined ? "user" : item.name
                             );
-                            navigation.navigate("UserDashBoard", {
-                              id: item.id,
-                              name: item.name,
-                            });
+                            await AsyncStorage.setItem(
+                              "profileId",
+                              item.id === undefined ? 0 : item.id
+                            );
+                            navigation.navigate("BottomNavigator");
                           }}
                         >
                           <Avatar.Image

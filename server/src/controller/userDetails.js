@@ -72,3 +72,166 @@ export const getAllUserNames = async (req, res) => {
     });
   }
 };
+export const getAllProfileNames = async (req, res) => {
+  try {
+    const { userId } = req.query;
+
+    let user = await User.findOne({ userId });
+
+    if (!user) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        message: "User not found",
+        statuscode: 400,
+      });
+    }
+    let profileNames = [];
+    const allUsers = await User.find({});
+    allUsers.map((item) => {
+      if (item.username !== "Organizer") {
+        item.profile.map((names) => {
+          if (names.name !== undefined) {
+            profileNames.push(names.name);
+          }
+        });
+      }
+    });
+
+    if (user.userRole === "organizer") {
+      console.log(profileNames);
+      res.status(StatusCodes.OK).json({
+        message: "profileName is fetched",
+        statuscode: 200,
+        profileNames: profileNames,
+      });
+    }
+  } catch (error) {
+    console.error(error);
+
+    res.status(StatusCodes.BAD_REQUEST).json({
+      message: "Internal Server Error",
+      statuscode: 400,
+    });
+  }
+};
+
+const getUserById = async (userId) => {
+  return await User.findOne({ userId });
+};
+
+const getOrganizerEvents = (user) => {
+  return user.events;
+};
+
+const getUserProfileEvents = (user, id) => {
+  const events = [];
+  user.profile.forEach((item) => {
+    if (id === item.id) {
+      events.push(...item.events);
+    }
+  });
+  return events;
+};
+
+export const getEvents = async (req, res) => {
+  try {
+    const { userId, id } = req.query;
+    console.log(userId, id);
+    if (!userId || userId === "") {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        message: "Invalid user ID",
+        statuscode: StatusCodes.BAD_REQUEST,
+      });
+    }
+
+    const user = await getUserById(userId);
+
+    if (!user) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        message: "User not found",
+        statuscode: StatusCodes.BAD_REQUEST,
+      });
+    }
+
+    let events = [];
+
+    if (user.userRole === "organizer") {
+      events = getOrganizerEvents(user);
+    } else {
+      events = getUserProfileEvents(user, id);
+    }
+
+    res.status(StatusCodes.OK).json({
+      message: "Events fetched successfully",
+      statuscode: StatusCodes.OK,
+      events,
+    });
+  } catch (error) {
+    console.error(error);
+
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message: "Internal Server Error",
+      statuscode: StatusCodes.INTERNAL_SERVER_ERROR,
+    });
+  }
+};
+const getUserProfileAttendence = (user, id) => {
+  const attedence = [];
+  user.profile.forEach((item) => {
+    if (id === item.id) {
+      attedence.push(item.attedence);
+    }
+  });
+  return attedence;
+};
+const getOrganizerAttendence = (user) => {
+  const attendence = [];
+  user.map((item) => {
+    item.profile.map((att) => {
+      attendence.push(...att.attedence);
+    });
+  });
+};
+export const getAttendence = async (req, res) => {
+  try {
+    const { userId, id } = req.query;
+
+    if (!userId || userId === "") {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        message: "Invalid user ID",
+        statuscode: StatusCodes.BAD_REQUEST,
+      });
+    }
+
+    const user = await getUserById(userId);
+
+    if (!user) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        message: "User not found",
+        statuscode: StatusCodes.BAD_REQUEST,
+      });
+    }
+
+    let events = [];
+
+    if (user.userRole === "organizer") {
+      const allUser = await User.find({});
+
+      events = getOrganizerAttendence(allUser);
+    } else {
+      events = getUserProfileAttendence(user, id);
+    }
+
+    res.status(StatusCodes.OK).json({
+      message: "Attendence fetched successfully",
+      statuscode: StatusCodes.OK,
+      events,
+    });
+  } catch (error) {
+    console.error(error);
+
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message: "Internal Server Error",
+      statuscode: StatusCodes.INTERNAL_SERVER_ERROR,
+    });
+  }
+};

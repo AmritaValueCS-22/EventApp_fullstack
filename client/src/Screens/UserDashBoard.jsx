@@ -46,7 +46,6 @@ const UserDashBoard = () => {
       getUserDetails();
     });
   }, [navigation]);
-  console.log(userRole);
 
   const onClickCard = (name) => {
     switch (name) {
@@ -62,7 +61,10 @@ const UserDashBoard = () => {
         navigation.navigate("AddEvent");
         break;
       case "Attedence":
-        // navigation.navigate("AddEvent");
+        navigation.navigate("Attedence", {
+          attendence: attedence,
+          userRole: userRole,
+        });
         break;
 
       default:
@@ -135,31 +137,31 @@ const UserDashBoard = () => {
                 <Text style={{ color: "black", marginTop: 3 }}>Add Event</Text>
               </View>
             </Pressable>
-            <Pressable disabled={true} onPress={() => onClickCard("Attedence")}>
-              <View
-                style={{
-                  width: 80,
-                  height: 80,
-                  backgroundColor: "white",
-                  marginHorizontal: 20,
-                  marginVertical: 10,
-                  elevation: 20,
-                  shadowColor: "#eebf80",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  borderColor: "#eebf80",
-                  borderWidth: 0.5,
-                  borderRadius: 10,
-                }}
-              >
-                <MaterialIcons color={"#eebf80"} size={30} name="table-chart" />
-                <Text style={{ color: "black", marginTop: 3, fontSize: 13 }}>
-                  Attendence
-                </Text>
-              </View>
-            </Pressable>
           </>
         )}
+        <Pressable onPress={() => onClickCard("Attedence")}>
+          <View
+            style={{
+              width: 80,
+              height: 80,
+              backgroundColor: "white",
+              marginHorizontal: 20,
+              marginVertical: 10,
+              elevation: 20,
+              shadowColor: "#eebf80",
+              alignItems: "center",
+              justifyContent: "center",
+              borderColor: "#eebf80",
+              borderWidth: 0.5,
+              borderRadius: 10,
+            }}
+          >
+            <MaterialIcons color={"#eebf80"} size={30} name="table-chart" />
+            <Text style={{ color: "black", marginTop: 3, fontSize: 13 }}>
+              Attendence
+            </Text>
+          </View>
+        </Pressable>
       </View>
     </View>
   );

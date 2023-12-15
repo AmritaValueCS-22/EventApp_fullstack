@@ -18,17 +18,18 @@ import { useSelector } from "react-redux";
 import AsyncStorage from "@react-native-community/async-storage";
 import SplashScreen from "../Screens/splashScreen";
 import LoadingScreen from "../Screens/LoadingScreen";
+import AttedenceScreen from "../Screens/AttedenceScreen";
+import BottomNavigator from "./BottomNavigator";
 
 const StackNaviagator = () => {
   const Tab = createBottomTabNavigator();
   const Stack = createStackNavigator();
   const [isLoggedIn, set] = useState(false);
-  const [role, setRole] = useState(false);
+  const [role, setRole] = useState("");
 
   const { loginData, showSplash, isLoading } = useSelector(
     (state) => state.eventAuth
   );
-
   const readData = async () => {
     try {
       const value = await AsyncStorage.getItem("token");
@@ -70,68 +71,9 @@ const StackNaviagator = () => {
             )}
 
             <Stack.Screen
-              name="UserDashBoard"
-              component={UserDashBoard}
-              options={{
-                headerLeft: () => <HeaderLeft type={"dashboard"} />,
-                headerRight: () => (
-                  <HeaderRight set={set} type={"dashboard"} role={role} />
-                ),
-                headerTitle: () => (
-                  <Header color={"#eebf80"} name={"Dashboard"} />
-                ),
-                headerLeftContainerStyle: {
-                  backgroundColor: "#eebf80",
-                  width: 50,
-                  height: 80,
-                },
-                headerStyle: {
-                  backgroundColor: "white",
-                  height: 80,
-                },
-              }}
-            />
-            <Stack.Screen
-              name="Event"
-              component={Event}
-              options={{
-                headerLeft: () => (
-                  <HeaderLeft type={"back"} route={"UserDashBoard"} />
-                ),
-                // headerRight: () => <HeaderRight />,
-                headerTitle: () => <Header color={"#eebf80"} name={"Event"} />,
-                headerLeftContainerStyle: {
-                  backgroundColor: "#eebf80",
-                  width: 50,
-                  height: 80,
-                },
-                headerStyle: {
-                  backgroundColor: "white",
-                  height: 80,
-                },
-              }}
-            />
-            <Stack.Screen
-              name="AddEvent"
-              component={AddEvent}
-              options={{
-                headerLeft: () => (
-                  <HeaderLeft type={"back"} route={"UserDashBoard"} />
-                ),
-                // headerRight: () => <HeaderRight />,
-                headerTitle: () => (
-                  <Header color={"#eebf80"} name={"Add Event"} />
-                ),
-                headerLeftContainerStyle: {
-                  backgroundColor: "#eebf80",
-                  width: 50,
-                  height: 80,
-                },
-                headerStyle: {
-                  backgroundColor: "white",
-                  height: 80,
-                },
-              }}
+              name="BottomNavigator"
+              children={() => <BottomNavigator set={set} role={role} />}
+              options={{ headerShown: false }}
             />
           </>
         ) : (

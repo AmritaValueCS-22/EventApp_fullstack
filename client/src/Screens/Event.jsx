@@ -1,30 +1,32 @@
 import React, { useCallback, useEffect, useState } from "react";
 import {
   Dimensions,
+  Modal,
   Pressable,
   SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
-  TouchableOpacity,
   View,
 } from "react-native";
 import { Agenda } from "react-native-calendars";
-import { Chip, Modal, RadioButton, TextInput } from "react-native-paper";
+import { Chip, RadioButton, TextInput } from "react-native-paper";
 import { useDispatch, useSelector } from "react-redux";
 import Entypo from "react-native-vector-icons/Entypo";
-import FontAwsom5 from "react-native-vector-icons/FontAwesome5";
-import MaterialIcons from "react-native-vector-icons/MaterialIcons";
+
 import ReactNativeModal from "react-native-modal";
 import { reason } from "../data/profileData";
 import {
   addAttedence,
-  getUserDetailsAction,
-  updateReason,
+  getAllNamesAction,
+  getEventDetailsAction,
 } from "../Redux/slices/EventAuthReducer";
-import moment from "moment";
+
 import AsyncStorage from "@react-native-community/async-storage";
 import { useNavigation, useRoute } from "@react-navigation/native";
+import Calender from "../Components/Calender";
+
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 const initialState = () => {
   return {
     openModel: false,
@@ -37,66 +39,41 @@ const initialState = () => {
     items: {},
     diableAttedence: false,
     error: false,
+    isOpenEdit: false,
   };
 };
 
 function Event() {
-  const { userDetails, loginData } = useSelector((state) => state.eventAuth);
-  const navigation = useNavigation();
-  const route = useRoute();
-  const [events, setEvent] = useState({});
-  const getDifferDate = (start, end) => {
-    const dates = [];
-    const currentDate = moment(start);
-
-    while (currentDate.isSameOrBefore(end)) {
-      dates.push(currentDate.format("YYYY-MM-DD"));
-      currentDate.add(1, "days");
-    }
-    return dates;
-  };
-
-  const getEventFormat = async () => {
-    const userRole = await AsyncStorage.getItem("userRole");
-
-    const result = {};
-
-    const isuserRole =
-      userRole === "organizer"
-        ? route.params.userDetails.userEvents
-        : route.params.userDetails.user.events;
-    isuserRole.forEach((event) => {
-      const dates = getDifferDate(event.startDate, event.endDate);
-      const currentDate = moment().format("YYYY-MM-DD");
-      console.log(event, "evenet");
-      dates.forEach((date) => {
-        if (!result[date]) {
-          result[date] = [];
-        }
-
-        result[date].push({
-          location: event.location,
-          eventName: event.eventName,
-          startTime: event.startTime,
-          endTime: event.endTime,
-          startDate: event.startDate,
-          endDate: event.endDate,
-          isLog: moment(currentDate).isSame(moment(date)) ? true : false,
-          eventId: event.eventId,
-        });
-      });
-    });
-
-    setEvent(result);
-  };
-  useEffect(() => {
-    getEventFormat();
-  }, []);
+  const { eventDetails } = useSelector((state) => state.eventAuth);
   const [state, setState] = useState(initialState());
   const { width } = Dimensions.get("screen");
-
+  const [role, setRole] = useState("");
   const dispatch = useDispatch();
-  const { openModel, checked, cardClr } = state;
+  const { openModel, checked, cardClr, isOpenEdit } = state;
+  const navigation = useNavigation();
+  const route = useRoute();
+
+  const getUserDetails = async () => {
+    try {
+      const userId = await AsyncStorage.getItem("userId");
+      const Role = await AsyncStorage.getItem("userRole");
+      const profileId = await AsyncStorage.getItem("profileId");
+
+      if (userId !== null) {
+        dispatch(getEventDetailsAction({ userId: userId, id: profileId }));
+        dispatch(getAllNamesAction({ userId: userId }));
+      }
+      if (Role === "organizer") {
+        // dispatch(getAllAttedence(userId));
+      }
+      if (Role !== null) {
+        setRole(Role);
+      }
+    } catch (e) {
+      alert("Failed to fetch the input from storage");
+    }
+  };
+
   const onHandleClick = (items) => {
     setState((prev) => ({
       ...prev,
@@ -104,18 +81,22 @@ function Event() {
       items,
     }));
   };
+
   const onHandleClose = () => {
     setState((prev) => ({
       ...prev,
       openModel: false,
+      isOpenEdit: false,
     }));
   };
+
   const onHandleSelectReason = () => {
     setState((prev) => ({
       ...prev,
       openModel: false,
     }));
   };
+
   const onChooseReason = (reason, id) => {
     setState((prev) => ({
       ...prev,
@@ -123,140 +104,60 @@ function Event() {
       selectedReason: id,
     }));
   };
+
   const onSubmitReason = async () => {
     try {
-      if (state.reason === "Other reason" && state.otherReason === "") {
-        setState((prev) => ({
-          ...prev,
-          error: true,
-        }));
-      } else {
-        const value = await AsyncStorage.getItem("token");
-        const newAttedence = {
-          eventName: state.items.eventName,
-          startDate: state.items.startDate,
-          endDate: state.items.endDate,
-          reason: checked
-            ? ""
-            : state.reason === "Other reason"
-            ? state.otherReason
-            : state.reason,
-          attedence: checked,
-          id: route.params.id,
-          token: value,
-          eventId: state.items.eventId,
-        };
-        console.log(state, "etetetet");
-        dispatch(addAttedence(newAttedence));
-        setState((prev) => ({
-          ...prev,
-          openModel: false,
-          error: true,
-          selectedReason: 0,
-          diableAttedence: true,
-        }));
-      }
-    } catch (error) {}
-  };
-
-  const renderEmptyData = () => {
-    return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <Text>No events available</Text>
-      </View>
-    );
-  };
-  const onAddAttedence = async (formData) => {
-    try {
       const value = await AsyncStorage.getItem("token");
-      if (value !== null) {
-        const newEvent = {
-          eventName: formData.eventName,
-          participants: participants,
-          startDate: startDate,
-          endDate: endDate,
-          allDay: isAllDay,
-          location: "",
-          repeat: "",
-          token: value,
-          startTime: startTime,
-          endTime: endTime,
-        };
+      const id = await AsyncStorage.getItem("profileId");
+      const userId = await AsyncStorage.getItem("userId");
 
-        dispatch(addEventAction(newEvent));
-        // dispatch(getUserDetailsAction(userId));
-        navigation.navigate("UserDashBoard");
-      }
-    } catch (e) {
-      alert("Failed to fetch the input from storage");
+      const newAttedence = {
+        eventName: state.items.eventName,
+        startDate: state.items.startDate,
+        endDate: state.items.endDate,
+        reason: checked
+          ? ""
+          : state.reason === "Other reason"
+          ? state.otherReason
+          : state.reason,
+        attedence: checked,
+        id: id,
+        token: value,
+        eventId: state.items.eventId,
+      };
+      console.log("ee");
+      dispatch(addAttedence(newAttedence));
+      dispatch(getEventDetailsAction({ userId: userId, id: id }));
+
+      setState((prev) => ({
+        ...prev,
+        openModel: false,
+        error: true,
+        selectedReason: 0,
+        diableAttedence: true,
+      }));
+    } catch (error) {
+      console.log(error);
     }
   };
 
+  useEffect(() => {
+    navigation.addListener("focus", () => {
+      getUserDetails();
+    });
+  }, [navigation]);
+  const showmodel = () => {
+    setState((prev) => ({
+      ...prev,
+      isOpenEdit: !state.isOpenEdit,
+    }));
+  };
   return (
     <SafeAreaView style={styles.container}>
-      <Agenda
-        selected={new Date()}
-        // hideKnob={true}
-        showOnlySelectedDayItems={true}
-        theme={{
-          arrowColor: "orange",
-          monthTextColor: "black",
-          textMonthFontSize: 20,
-          textDayHeaderFontSize: 14,
-          dayTextColor: "black",
-          textDayFontSize: 16,
-          agendaKnobColor: "#eebf80",
-        }}
-        renderEmptyData={renderEmptyData}
-        // markedDates={events[marked]}
-        items={events}
-        renderItem={(item, isFirst) => {
-          console.log(item);
-          return (
-            <View
-              style={{
-                flexDirection: "row",
-                backgroundColor: "white",
-                flex: 1,
-                borderRadius: 5,
-                padding: 10,
-                marginRight: 10,
-                marginTop: 17,
-              }}
-            >
-              <View style={{ flex: 0.8 }}>
-                <Text
-                  style={{
-                    color: "black",
-                    fontWeight: 600,
-                    fontSize: 12,
-                  }}
-                >
-                  {item.startTime} - {item.endTime}
-                </Text>
-                <Text style={styles.itemText}>{item.eventName}</Text>
-              </View>
-              <View
-                style={{
-                  flex: 0.3,
-                  flexDirection: "row",
-                  justifyContent: "space-around",
-                  alignItems: "center",
-                }}
-              >
-                {route.params.userRole === "participant" && (
-                  <FontAwsom5
-                    onPress={() => onHandleClick(item)}
-                    size={23}
-                    color={item.isLog ? "red" : "grey"}
-                    name="fingerprint"
-                    disabled={!item.isLog}
-                  />
-                )}
-              </View>
-            </View>
-          );
-        }}
+      <Calender
+        showmodel={showmodel}
+        onHandleClick={onHandleClick}
+        role={role}
       />
       <ReactNativeModal
         isVisible={openModel}
@@ -393,6 +294,7 @@ function Event() {
                   )}
                 </Pressable>
               )}
+
               <Text
                 style={{
                   textAlign: "center",
@@ -403,7 +305,7 @@ function Event() {
                   color: "white",
                   width: width - 40,
                   height: 50,
-                  //   alignItems: "center",
+
                   paddingTop: 10,
                   position: "absolute",
                   bottom: 0,
@@ -414,6 +316,51 @@ function Event() {
               </Text>
             </View>
           </>
+        }
+      />
+      <ReactNativeModal
+        isVisible={isOpenEdit}
+        swipeDirection="left"
+        onBackButtonPress={onHandleClose}
+        onBackdropPress={onHandleClose}
+        children={
+          <View
+            style={{
+              width: width - 40,
+              flex: 0.8,
+              backgroundColor: "white",
+              borderRadius: 20,
+            }}
+          >
+            <View
+              style={{
+                flex: 0.1,
+                backgroundColor: "#eebf80",
+                alignItems: "center",
+                paddingLeft: 15,
+                flexDirection: "row",
+              }}
+            >
+              <MaterialCommunityIcons
+                size={23}
+                color={"white"}
+                name="circle-edit-outline"
+              />
+              <Text
+                style={{
+                  color: "white",
+                  fontWeight: 700,
+                  fontSize: 20,
+                  marginLeft: 5,
+                }}
+              >
+                Edit event
+              </Text>
+            </View>
+            <View style={{ flex: 0.9 }}>
+              <TextInput />
+            </View>
+          </View>
         }
       />
     </SafeAreaView>

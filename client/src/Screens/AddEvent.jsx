@@ -13,7 +13,7 @@ import {
   updateEvents,
 } from "../Redux/slices/EventAuthReducer";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import * as yup from "yup";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -54,11 +54,11 @@ const AddEvent = () => {
   });
   const { height, width } = Dimensions.get("screen");
   const [state, set] = useState(initialState());
-  const { events, userDetails, userNames } = useSelector(
-    (state) => state.eventAuth
-  );
+  const { profileNames } = useSelector((state) => state.eventAuth);
   const dispatch = useDispatch();
+  const route = useRoute();
   const navigation = useNavigation();
+  console.log(route, "rr");
   const {
     startDate,
     endDate,
@@ -73,12 +73,30 @@ const AddEvent = () => {
   } = state;
 
   useEffect(() => {
+    navigation.addListener("focus", () => {
+      set((prev) => ({
+        ...prev,
+        participants: profileNames,
+      }));
+    });
+  }, [profileNames, navigation]);
+  const onClear = () => {
     set((prev) => ({
       ...prev,
-      participants: userNames,
+      startDate: StartDate,
+      endDate: EndDate,
+      startTime: moment().add(30, "minute").format("HH:mm"),
+      endTime: moment().add(60, "minute").format("HH:mm"),
+      openStartDate: false,
+      openEndDate: false,
+      openStartTime: false,
+      openEndTime: false,
+      participants: [],
+      isAllDay: true,
+      users: [],
+      eventName: "",
     }));
-  }, [userNames]);
-
+  };
   const onChangeSwitch = (value) => {
     set((prev) => ({
       ...prev,
@@ -129,6 +147,7 @@ const AddEvent = () => {
         set((prev) => ({
           ...prev,
           startDate: moment(date).format("YYYY-MM-DD"),
+          endDate: moment(date).format("YYYY-MM-DD"),
           openStartDate: false,
         }));
         break;
@@ -158,10 +177,11 @@ const AddEvent = () => {
         break;
     }
   };
+  console.log(profileNames);
+
   const onHandleAddEvent = async (formData) => {
     try {
       const value = await AsyncStorage.getItem("token");
-      const userId = await AsyncStorage.getItem("userId");
       if (value !== null) {
         const newEvent = {
           eventName: formData.eventName,
@@ -176,94 +196,19 @@ const AddEvent = () => {
           endTime: endTime,
         };
 
-        dispatch(addEventAction(newEvent));
-        // dispatch(getUserDetailsAction(userId));
-        navigation.navigate("UserDashBoard");
+        await dispatch(addEventAction(newEvent));
+        await navigation.navigate("UserDashBoard");
+        onClear();
       }
     } catch (e) {
       alert("Failed to fetch the input from storage");
     }
-
-    // const dates = getDifferDate(startDate, endDate);
-    // const missingDates = dates.filter(
-    //   (date) => !Object.keys(events).includes(date)
-    // );
-
-    // const updatedEvents = Object.keys(events).reduce((acc, date) => {
-    //   acc[date] = [
-    //     ...events[date],
-    //     { eventName: formData.eventName, endTime, startTime },
-    //   ];
-    //   return acc;
-    // }, {});
-
-    // missingDates.forEach((date) => {
-    //   updatedEvents[date] = [
-    //     { eventName: formData.eventName, endTime, startTime },
-    //   ];
-    // });
-
-    // dispatch(updateEvents(updatedEvents));
-    // navigation.navigate("Event");
-  };
-
-  //   let newValue = {};
-  //   let newSubObj1 = {};
-  //   let newSubObj = {};
-  //   const dates = getDifferDate(startDate, endDate);
-  //   dates.flatMap((item, index) => {
-  //     console.log(item);
-  //     if (events[item]) {
-  //       console.log("it work");
-  //       const newSubObj = {
-  //         eventName,
-  //         startTime,
-  //         endTime,
-  //       };
-  //       console.log(events[item], "itemss");
-  //       const newSubObj1 = {
-  //         [item]: [...events[item], newSubObj],
-  //       };
-
-  //       dispatch(updateEvents({ ...events, ...newSubObj1 }));
-  //     } else if (!events[item]) {
-  //       console.log("it wont");
-
-  //       let newObj = {
-  //         [item]: [
-  //           {
-  //             eventName,
-  //             startTime,
-  //             endTime,
-  //           },
-  //         ],
-  //       };
-  //       newValue = {
-  //         ...newObj,
-  //         ...newValue,
-  //         ...newSubObj1,
-  //       };
-  //       console.log(newValue);
-  //       dispatch(updateEvents({ ...events, ...newValue }));
-  //     }
-  //   });
-  //   console.log(newValue);
-  // };
-  const getDifferDate = (start, end) => {
-    const dates = [];
-    const currentDate = moment(start);
-
-    while (currentDate.isSameOrBefore(end)) {
-      dates.push(currentDate.format("YYYY-MM-DD"));
-      currentDate.add(1, "days");
-    }
-    return dates;
   };
   return (
     <View
       style={{
         flex: 1,
-        backgroundColor: "white",
+
         alignItems: "center",
         // justifyContent: "center",
       }}

@@ -1,8 +1,8 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import React, { useEffect, useState } from "react";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
-import FontAwsome from "react-native-vector-icons/FontAwesome";
-
+import MaterialIcons from "react-native-vector-icons/MaterialIcons";
+import FontAwesome5 from "react-native-vector-icons/FontAwesome5";
 import { useNavigation } from "@react-navigation/native";
 import AsyncStorage from "@react-native-community/async-storage";
 import { logout } from "../Redux/slices/EventAuthReducer";
@@ -27,13 +27,9 @@ export const HeaderLeft = ({ type, route }) => {
           size={30}
         />
       )}
-      {type === "back" && (
-        <MaterialCommunityIcons
-          name="arrow-left-top"
-          color={"white"}
-          size={25}
-          onPress={() => navigation.navigate(route)}
-        />
+      {type === "add" && <MaterialIcons name="add" color={"white"} size={25} />}
+      {type === "file-excel" && (
+        <FontAwesome5 name="file-excel" color={"white"} size={25} />
       )}
     </Pressable>
   );
@@ -49,7 +45,6 @@ export const HeaderRight = ({ type, set, role }) => {
   useEffect(() => {
     getName();
   }, []);
-  console.log(role, "role");
 
   const onLogOut = async () => {
     await AsyncStorage.removeItem("token");

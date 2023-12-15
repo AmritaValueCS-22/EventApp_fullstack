@@ -7,7 +7,6 @@ dotenv.config();
 const authenticateUser = async (req, res, next) => {
   try {
     const token = req.header("Authorization");
-    console.log(req.header("Authorization"));
     const decoded = jwt.verify(token, process.env.SECRET_KEY);
     const user = await User.findOne({
       _id: decoded.userId,
@@ -17,11 +16,13 @@ const authenticateUser = async (req, res, next) => {
     if (!user) {
       throw new Error();
     }
-    console.log(user);
+
     req.user = user;
     req.token = token;
     next();
   } catch (error) {
+    console.log(error);
+
     res.status(401).json({ error: "Please authenticate." });
   }
 };

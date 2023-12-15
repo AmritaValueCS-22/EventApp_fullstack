@@ -2,13 +2,14 @@
 /* eslint-disable quotes */
 import AsyncStorage from "@react-native-community/async-storage";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import moment from "moment";
 import Toast from "react-native-toast-message";
 
 const initialState = {
   isLoading: false,
   userProfileList: [],
   UserData: [],
-  events: {},
+  eventDetails: {},
   reasonForLeave: "",
   isLoggedIn: false,
   loginData: [],
@@ -18,6 +19,7 @@ const initialState = {
   userNames: [],
   attedence: [],
   isProfileLoading: false,
+  eventLoading: false,
 };
 
 export const signupAction = createAsyncThunk(
@@ -48,6 +50,17 @@ export const signupAction = createAsyncThunk(
     return result;
   }
 );
+
+const getDifferDate = (start, end) => {
+  const dates = [];
+  const currentDate = moment(start);
+
+  while (currentDate.isSameOrBefore(end)) {
+    dates.push(currentDate.format("YYYY-MM-DD"));
+    currentDate.add(1, "days");
+  }
+  return dates;
+};
 export const profileAction = createAsyncThunk(
   "eventauth/eventLogin",
   async (body) => {
@@ -188,6 +201,7 @@ export const loginAction = createAsyncThunk(
       await AsyncStorage.setItem("token", result.token);
       await AsyncStorage.setItem("userId", result.userId);
       await AsyncStorage.setItem("userRole", result.userRole);
+      console.log(result.token);
       Toast.show({
         type: "SuccessToast",
         text1: result.message,
@@ -205,9 +219,9 @@ export const loginAction = createAsyncThunk(
 );
 export const getAllNamesAction = createAsyncThunk(
   "eventauth/userNames",
-  async (userId) => {
+  async (body) => {
     const response = await fetch(
-      `http://192.168.56.1:5000/user/userName?userId=${userId}`,
+      `http://192.168.56.1:5000/user/profileName?userId=${body.userId}`,
       {
         method: "GET",
         headers: {
@@ -278,7 +292,7 @@ export const getAllAttedence = createAsyncThunk(
       }
     );
     const result = await response.json();
-    console.log(result, "hfhfh");
+
     if (result.statuscode === 200) {
       // Toast.show({
       //   type: "SuccessToast",
@@ -388,6 +402,66 @@ export const editProfileAction = createAsyncThunk(
     }
   }
 );
+export const getEventDetailsAction = createAsyncThunk(
+  "eventauth/getEventDetails",
+  async (body) => {
+    const response = await fetch(
+      `http://192.168.56.1:5000/user/userEvents?userId=${body.userId}&&id=${body.id}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    const result = await response.json();
+
+    if (result.statuscode === 200) {
+      // Toast.show({
+      //   type: "SuccessToast",
+      //   text1: result.message,
+      // });
+      return result;
+    }
+
+    if (result.statuscode === 400) {
+      // Toast.show({
+      //   type: "ErrorToast",
+      //   text1: result.message,
+      // });
+    }
+  }
+);
+export const getAttendenceAction = createAsyncThunk(
+  "eventauth/getAttendence",
+  async (body) => {
+    const response = await fetch(
+      `http://192.168.56.1:5000/user/userAttendence?userId=${body.userId}&&id=${body.id}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    const result = await response.json();
+
+    if (result.statuscode === 200) {
+      // Toast.show({
+      //   type: "SuccessToast",
+      //   text1: result.message,
+      // });
+      return result;
+    }
+
+    if (result.statuscode === 400) {
+      // Toast.show({
+      //   type: "ErrorToast",
+      //   text1: result.message,
+      // });
+    }
+  }
+);
 const eventAuthReducer = createSlice({
   name: "eventauth",
   initialState,
@@ -398,9 +472,9 @@ const eventAuthReducer = createSlice({
     updateUserData: (state, action) => {
       state.UserData = action.payload;
     },
-    updateEvents: (state, action) => {
-      state.events = { ...state.events, ...action.payload };
-    },
+    // updateEvents: (state, action) => {
+    //   state.events = { ...state.events, ...action.payload };
+    // },
     updateReason: (state, action) => {
       state.reasonForLeave = action.payload;
     },
@@ -411,6 +485,7 @@ const eventAuthReducer = createSlice({
       state.loginData = [];
       state.isLoading = false;
       state.userDetails = [];
+      state.eventDetails = [];
     },
   },
   extraReducers: (builder) => {
@@ -461,7 +536,8 @@ const eventAuthReducer = createSlice({
 
     builder.addCase(getAllNamesAction.pending, (state) => {});
     builder.addCase(getAllNamesAction.fulfilled, (state, action) => {
-      state.userNames = action.payload.userNames;
+      console.log();
+      state.profileNames = action.payload.profileNames;
     });
     builder.addCase(getAllNamesAction.rejected, (state, action) => {});
     // attedence
@@ -491,6 +567,55 @@ const eventAuthReducer = createSlice({
       state.isProfileLoading = false;
     });
     builder.addCase(deleteProfileAction.rejected, (state, action) => {
+      state.isProfileLoading = true;
+    });
+    // eventDetails
+
+    builder.addCase(getEventDetailsAction.pending, (state) => {
+      state.eventLoading = false;
+    });
+    builder.addCase(getEventDetailsAction.fulfilled, (state, action) => {
+      const result = {};
+
+      action.payload?.events?.forEach((event) => {
+        const dates = getDifferDate(event.startDate, event.endDate);
+        const currentDate = moment().format("YYYY-MM-DD");
+
+        dates.forEach((date) => {
+          result[date] = result[date] || [];
+
+          result[date].push({
+            location: event.location,
+            eventName: event.eventName,
+            startTime: event.startTime,
+
+            endTime: event.endTime,
+            startDate: event.startDate,
+            endDate: event.endDate,
+            isLog: event.userAttendence,
+            eventId: event.eventId,
+          });
+        });
+      });
+
+      return {
+        ...state,
+        eventDetails: result,
+      };
+    });
+
+    builder.addCase(getEventDetailsAction.rejected, (state, action) => {
+      state.isProfileLoading = true;
+    });
+    // get attendence
+
+    builder.addCase(getAttendenceAction.pending, (state) => {
+      state.isProfileLoading = true;
+    });
+    builder.addCase(getAttendenceAction.fulfilled, (state, action) => {
+      state.isProfileLoading = false;
+    });
+    builder.addCase(getAttendenceAction.rejected, (state, action) => {
       state.isProfileLoading = true;
     });
   },
