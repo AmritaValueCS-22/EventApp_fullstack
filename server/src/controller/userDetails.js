@@ -178,23 +178,26 @@ const getUserProfileAttendence = (user, id) => {
   const attedence = [];
   user.profile.forEach((item) => {
     if (id === item.id) {
-      attedence.push(item.attedence);
+      console.log(item.attedence);
+      attedence.push(...item.attedence);
     }
   });
   return attedence;
 };
 const getOrganizerAttendence = (user) => {
   const attendence = [];
+
   user.map((item) => {
     item.profile.map((att) => {
       attendence.push(...att.attedence);
     });
   });
+  return attendence;
 };
 export const getAttendence = async (req, res) => {
   try {
     const { userId, id } = req.query;
-
+    console.log(userId, id, "f");
     if (!userId || userId === "") {
       return res.status(StatusCodes.BAD_REQUEST).json({
         message: "Invalid user ID",
@@ -211,20 +214,20 @@ export const getAttendence = async (req, res) => {
       });
     }
 
-    let events = [];
+    let attendence = [];
 
     if (user.userRole === "organizer") {
       const allUser = await User.find({});
 
-      events = getOrganizerAttendence(allUser);
+      attendence = getOrganizerAttendence(allUser);
     } else {
-      events = getUserProfileAttendence(user, id);
+      attendence = getUserProfileAttendence(user, id);
     }
 
     res.status(StatusCodes.OK).json({
       message: "Attendence fetched successfully",
       statuscode: StatusCodes.OK,
-      events,
+      attendence,
     });
   } catch (error) {
     console.error(error);

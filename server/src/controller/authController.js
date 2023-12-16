@@ -129,6 +129,7 @@ export const login = async (req, res) => {
         message: "Login successful",
         userRole: user.userRole,
         userId: user.userId,
+        phoneNumber: user.phoneNumber,
         token,
         isUserHaveProfile: user.profile.length > 0,
         statuscode: 200,

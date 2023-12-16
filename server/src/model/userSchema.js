@@ -6,10 +6,12 @@ const attedenceSchema = new mongoose.Schema({
   eventName: { type: String },
   startDate: { type: Date, required: true },
   endDate: { type: Date, required: true },
-  attedence: { type: Boolean },
+  attendence: { type: String },
   reason: { type: String },
   id: { type: String, require: true },
   eventId: { type: String },
+  name: { type: String },
+  phoneNumber: { type: String, required: true, match: /^[0-9]{10}$/ },
 });
 
 const eventSchema = new mongoose.Schema({

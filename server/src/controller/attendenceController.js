@@ -1,13 +1,22 @@
 import { StatusCodes } from "http-status-codes";
 import User from "../model/userSchema.js";
+import moment from "moment";
 
 export const attendanceUpdate = async (req, res) => {
   try {
     const { userId } = req.user;
-    const { eventName, id, attendance, reason, startDate, endDate, eventId } =
-      req.body;
+    const {
+      eventName,
+      id,
+      attendance,
+      reason,
+      startDate,
+      endDate,
+      eventId,
+      name,
+      phoneNumber,
+    } = req.body;
 
-    console.log(userId, eventName, id, attendance, reason, startDate, endDate);
     const user = await User.findOne({ userId });
 
     if (!user) {
@@ -25,19 +34,22 @@ export const attendanceUpdate = async (req, res) => {
           reason,
           startDate,
           endDate,
-          name: item.name,
-          class: item.class,
+          name,
+          phoneNumber,
         };
         item.events.map((evt) => {
           if (evt.eventId === eventId) {
-            evt.userAttendence = true;
+            evt.userAttendence =
+              moment().format("YYYY-MM-DD") ===
+              moment(startDate).format("YYYY-MM-DD")
+                ? true
+                : false;
           }
         });
         item.attedence = item.attedence || [];
         item.attedence.push(attendanceObject);
       }
     });
-    user.pr;
 
     if (user.userRole === "participant") {
       await user.save();

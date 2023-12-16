@@ -85,11 +85,11 @@ export const addEvent = async (req, res) => {
 export const editEvent = async (req, res) => {
   try {
     const { userId } = req.user;
-    const { eventId } = req.params; // Assuming eventId is passed as a parameter
-
+    const { eventId } = req.query;
+    console.log(userId, eventId, "g");
     const {
       eventName,
-      participants, // Array of participant usernames
+      participants,
       startDate,
       endDate,
       allDay,
@@ -99,7 +99,6 @@ export const editEvent = async (req, res) => {
       repeat,
     } = req.body;
 
-    // Find the organizer by userId
     const organizer = await User.findOne({ userId });
 
     if (!organizer || organizer.userRole !== "organizer") {
