@@ -51,6 +51,7 @@ export const HeaderRight = ({ type, set, role }) => {
     await AsyncStorage.removeItem("userId");
     await AsyncStorage.removeItem("userName");
     await AsyncStorage.removeItem("userRole");
+    await AsyncStorage.removeItem("profileId");
     set(false);
     dispatch(logout());
   };

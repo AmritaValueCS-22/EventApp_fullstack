@@ -20,6 +20,7 @@ const initialState = {
   attedence: [],
   isProfileLoading: false,
   eventLoading: false,
+  refresh: false,
 };
 
 export const signupAction = createAsyncThunk(
@@ -185,6 +186,39 @@ export const addEventAction = createAsyncThunk(
     }
   }
 );
+export const editEventAction = createAsyncThunk(
+  "eventauth/editEvent",
+  async (body) => {
+    console.log(body);
+    const response = await fetch(
+      `http://192.168.56.1:5000/events/edit-event?eventId=${body.eventId}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: body.token,
+        },
+        body: JSON.stringify(body),
+      }
+    );
+    const result = await response.json();
+
+    if (result.statuscode === 200) {
+      Toast.show({
+        type: "SuccessToast",
+        text1: result.message,
+      });
+      return result;
+    }
+
+    if (result.statuscode === 400) {
+      Toast.show({
+        type: "ErrorToast",
+        text1: result.message,
+      });
+    }
+  }
+);
 export const loginAction = createAsyncThunk(
   "eventauth/eventLogin",
   async (body) => {
@@ -201,6 +235,7 @@ export const loginAction = createAsyncThunk(
       await AsyncStorage.setItem("token", result.token);
       await AsyncStorage.setItem("userId", result.userId);
       await AsyncStorage.setItem("userRole", result.userRole);
+      await AsyncStorage.setItem("phoneNumber", result.phoneNumber);
       console.log(result.token);
       Toast.show({
         type: "SuccessToast",
@@ -534,12 +569,16 @@ const eventAuthReducer = createSlice({
     builder.addCase(addEventAction.rejected, (state, action) => {});
     // userNames
 
-    builder.addCase(getAllNamesAction.pending, (state) => {});
+    builder.addCase(getAllNamesAction.pending, (state) => {
+      state.refresh = true;
+    });
     builder.addCase(getAllNamesAction.fulfilled, (state, action) => {
-      console.log();
+      state.refresh = false;
       state.profileNames = action.payload.profileNames;
     });
-    builder.addCase(getAllNamesAction.rejected, (state, action) => {});
+    builder.addCase(getAllNamesAction.rejected, (state, action) => {
+      state.refresh = true;
+    });
     // attedence
 
     builder.addCase(getAllAttedence.pending, (state) => {});
@@ -573,14 +612,17 @@ const eventAuthReducer = createSlice({
 
     builder.addCase(getEventDetailsAction.pending, (state) => {
       state.eventLoading = false;
+      state.refresh = true;
     });
     builder.addCase(getEventDetailsAction.fulfilled, (state, action) => {
       const result = {};
 
       action.payload?.events?.forEach((event) => {
+        console.log(event, "events");
         const dates = getDifferDate(event.startDate, event.endDate);
         const currentDate = moment().format("YYYY-MM-DD");
-
+        const startDate = moment(event.startDate).format("YYYY-MM-DD");
+        console.log(currentDate === startDate);
         dates.forEach((date) => {
           result[date] = result[date] || [];
 
@@ -592,7 +634,8 @@ const eventAuthReducer = createSlice({
             endTime: event.endTime,
             startDate: event.startDate,
             endDate: event.endDate,
-            isLog: event.userAttendence,
+            isLog:
+              event.userAttendence && currentDate === startDate ? true : false,
             eventId: event.eventId,
           });
         });
@@ -601,22 +644,27 @@ const eventAuthReducer = createSlice({
       return {
         ...state,
         eventDetails: result,
+        refresh: false,
       };
     });
 
     builder.addCase(getEventDetailsAction.rejected, (state, action) => {
       state.isProfileLoading = true;
+      state.refresh = true;
     });
     // get attendence
 
     builder.addCase(getAttendenceAction.pending, (state) => {
       state.isProfileLoading = true;
+      state.refresh = true;
     });
     builder.addCase(getAttendenceAction.fulfilled, (state, action) => {
-      state.isProfileLoading = false;
+      state.attedence = action.payload.attendence;
+      state.refresh = false;
     });
     builder.addCase(getAttendenceAction.rejected, (state, action) => {
       state.isProfileLoading = true;
+      state.refresh = true;
     });
   },
 });

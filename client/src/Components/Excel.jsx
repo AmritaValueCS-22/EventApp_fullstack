@@ -16,10 +16,11 @@ const Excel = ({ attendence }) => {
     const headers = [
       "No",
       "Name",
+      "E.Name",
       "StartDate",
-      "EndDate",
       "Attendence",
       "Reason",
+      "Mobile",
     ];
     const ws = XLSX.utils.json_to_sheet(attendence, { header: headers });
 

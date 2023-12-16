@@ -19,6 +19,7 @@ import { reason } from "../data/profileData";
 import {
   addAttedence,
   getAllNamesAction,
+  getAttendenceAction,
   getEventDetailsAction,
 } from "../Redux/slices/EventAuthReducer";
 
@@ -26,7 +27,9 @@ import AsyncStorage from "@react-native-community/async-storage";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import Calender from "../Components/Calender";
 
-import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+import EvilIcons from "react-native-vector-icons/EvilIcons";
+import AddEvent from "./AddEvent";
+import RefreshScreen from "./RefreshScreen";
 const initialState = () => {
   return {
     openModel: false,
@@ -40,18 +43,21 @@ const initialState = () => {
     diableAttedence: false,
     error: false,
     isOpenEdit: false,
+    logged: false,
+    selectedEvent: {},
   };
 };
 
 function Event() {
-  const { eventDetails } = useSelector((state) => state.eventAuth);
+  const { eventDetails, attedence, refresh } = useSelector(
+    (state) => state.eventAuth
+  );
   const [state, setState] = useState(initialState());
   const { width } = Dimensions.get("screen");
   const [role, setRole] = useState("");
   const dispatch = useDispatch();
-  const { openModel, checked, cardClr, isOpenEdit } = state;
+  const { openModel, checked, cardClr, isOpenEdit, selectedEvent } = state;
   const navigation = useNavigation();
-  const route = useRoute();
 
   const getUserDetails = async () => {
     try {
@@ -62,6 +68,7 @@ function Event() {
       if (userId !== null) {
         dispatch(getEventDetailsAction({ userId: userId, id: profileId }));
         dispatch(getAllNamesAction({ userId: userId }));
+        dispatch(getAttendenceAction({ userId: userId, id: profileId }));
       }
       if (Role === "organizer") {
         // dispatch(getAllAttedence(userId));
@@ -89,7 +96,7 @@ function Event() {
       isOpenEdit: false,
     }));
   };
-
+  console.log(refresh, "refresh");
   const onHandleSelectReason = () => {
     setState((prev) => ({
       ...prev,
@@ -104,30 +111,44 @@ function Event() {
       selectedReason: id,
     }));
   };
+  const onHandleRefresh = async () => {
+    const profileId = await AsyncStorage.getItem("profileId");
+    const userId = await AsyncStorage.getItem("userId");
 
+    dispatch(getEventDetailsAction({ userId: userId, id: profileId }));
+    dispatch(getAllNamesAction({ userId: userId }));
+    dispatch(getAttendenceAction({ userId: userId, id: profileId }));
+  };
   const onSubmitReason = async () => {
     try {
       const value = await AsyncStorage.getItem("token");
       const id = await AsyncStorage.getItem("profileId");
       const userId = await AsyncStorage.getItem("userId");
+      const name = await AsyncStorage.getItem("userName");
+      const phoneNumber = await AsyncStorage.getItem("phoneNumber");
 
       const newAttedence = {
         eventName: state.items.eventName,
         startDate: state.items.startDate,
         endDate: state.items.endDate,
-        reason: checked
-          ? ""
-          : state.reason === "Other reason"
-          ? state.otherReason
-          : state.reason,
-        attedence: checked,
+        reason:
+          checked === "yes"
+            ? ""
+            : state.reason === "Other reason"
+            ? state.otherReason
+            : state.reason,
+        attendance: checked,
         id: id,
         token: value,
         eventId: state.items.eventId,
+        phoneNumber,
+        name,
       };
-      console.log("ee");
+      console.log(newAttedence);
+
       dispatch(addAttedence(newAttedence));
       dispatch(getEventDetailsAction({ userId: userId, id: id }));
+      dispatch(getAttendenceAction({ userId: userId, id: id }));
 
       setState((prev) => ({
         ...prev,
@@ -135,6 +156,7 @@ function Event() {
         error: true,
         selectedReason: 0,
         diableAttedence: true,
+        logged: true,
       }));
     } catch (error) {
       console.log(error);
@@ -146,223 +168,246 @@ function Event() {
       getUserDetails();
     });
   }, [navigation]);
-  const showmodel = () => {
+  const showmodel = (item) => {
     setState((prev) => ({
       ...prev,
       isOpenEdit: !state.isOpenEdit,
+      selectedEvent: item,
     }));
   };
   return (
     <SafeAreaView style={styles.container}>
-      <Calender
-        showmodel={showmodel}
-        onHandleClick={onHandleClick}
-        role={role}
-      />
-      <ReactNativeModal
-        isVisible={openModel}
-        swipeDirection="left"
-        onBackButtonPress={onHandleClose}
-        onBackdropPress={onHandleClose}
-        children={
-          <>
-            <View
+      {refresh ? (
+        <RefreshScreen />
+      ) : (
+        <>
+          <Calender
+            showmodel={showmodel}
+            onHandleClick={onHandleClick}
+            role={role}
+            logged={state.logged}
+          />
+          <View style={{ width, alignItems: "flex-end" }}>
+            <Pressable
               style={{
+                width: 100,
                 backgroundColor: "white",
-                height:
-                  checked === "yes"
-                    ? 210
-                    : state.reason === "Other reason"
-                    ? 580
-                    : 500,
-                borderRadius: 40,
+                flexDirection: "row",
                 alignItems: "center",
-                position: "absolute",
+                height: 40,
+                marginBottom: 15,
+                shadowColor: "#eebf80",
+                elevation: 15,
+                borderRadius: 20,
+                padding: 1,
               }}
+              onPress={onHandleRefresh}
             >
-              <Text
-                style={{
-                  textAlign: "center",
-                  fontSize: 18,
-                  backgroundColor: cardClr,
-                  borderTopLeftRadius: 40,
-                  borderTopRightRadius: 40,
-                  color: "white",
-                  width: width - 40,
-                  height: 50,
-                  alignItems: "center",
-                  paddingTop: 10,
-                }}
-              >
-                Planning to attend the event ?
-              </Text>
-              <Text style={{ color: "black", fontSize: 20 }}></Text>
-              <View
-                style={{
-                  height: 100,
-                  width: 110,
-                  flexDirection: "row",
-                  //   alignItems: "center",
+              <EvilIcons name="refresh" size={25} color={"#eebf80"} />
+              <Text style={{ color: "#eebf80", fontSize: 18 }}>Refresh</Text>
+            </Pressable>
+          </View>
 
-                  justifyContent: "space-between",
-                }}
-              >
-                <View style={{ alignItems: "center" }}>
-                  <Entypo size={35} color={"#63b467"} name="thumbs-up" />
+          <ReactNativeModal
+            isVisible={openModel}
+            swipeDirection="left"
+            onBackButtonPress={onHandleClose}
+            onBackdropPress={onHandleClose}
+            children={
+              <>
+                <View
+                  style={{
+                    backgroundColor: "white",
+                    height:
+                      checked === "yes"
+                        ? 210
+                        : state.reason === "Other reason"
+                        ? 580
+                        : 500,
+                    borderRadius: 40,
+                    alignItems: "center",
+                    position: "absolute",
+                  }}
+                >
+                  <Text
+                    style={{
+                      textAlign: "center",
+                      fontSize: 18,
+                      backgroundColor: cardClr,
+                      borderTopLeftRadius: 40,
+                      borderTopRightRadius: 40,
+                      color: "white",
+                      width: width - 40,
+                      height: 50,
+                      alignItems: "center",
+                      paddingTop: 10,
+                    }}
+                  >
+                    Planning to attend the event ?
+                  </Text>
+                  <Text style={{ color: "black", fontSize: 20 }}></Text>
+                  <View
+                    style={{
+                      height: 100,
+                      width: 110,
+                      flexDirection: "row",
+                      //   alignItems: "center",
 
-                  <RadioButton
-                    value="yes"
-                    color="#63b467"
-                    status={checked === "yes" ? "checked" : "unchecked"}
-                    onPress={() =>
-                      setState((prev) => ({
-                        ...prev,
-                        checked: "yes",
-                        cardClr: "#63b467",
-                      }))
-                    }
-                  />
-                </View>
-                <View style={{ alignItems: "center" }}>
-                  <Entypo size={35} color={"#f74d49"} name="thumbs-down" />
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    <View style={{ alignItems: "center" }}>
+                      <Entypo size={35} color={"#63b467"} name="thumbs-up" />
 
-                  <RadioButton
-                    value="no"
-                    color="#f74d49"
-                    status={checked === "no" ? "checked" : "unchecked"}
-                    onPress={() =>
-                      setState((prev) => ({
-                        ...prev,
-                        checked: "no",
-                        cardClr: "#f74d49",
-                      }))
-                    }
-                  />
-                </View>
-              </View>
-              {checked === "no" && (
-                <Pressable onPress={onHandleSelectReason}>
-                  <View style={{ marginHorizontal: 5, marginVertical: 5 }}>
-                    <Text
-                      style={{ fontSize: 15, color: "black", fontWeight: 700 }}
-                    >
-                      Reason
-                    </Text>
-                    <View style={{}}>
-                      {reason.map((item) => {
-                        return (
-                          <Chip
-                            key={item.id}
-                            style={{ width: 300, marginVertical: 10 }}
-                            onPress={() => onChooseReason(item.reason, item.id)}
-                            selected={item.id === state.selectedReason}
-                            selectedColor={
-                              item.id === state.selectedReason ? "red" : "black"
-                            }
-                          >
-                            {item.reason}
-                          </Chip>
-                        );
-                      })}
-                    </View>
-                  </View>
-                  {state.reason === "Other reason" && (
-                    <View>
-                      <Text
-                        style={{
-                          color: "black",
-                          marginLeft: 5,
-                          fontWeight: 800,
-                          marginBottom: 15,
-                        }}
-                      >
-                        Other Reason
-                      </Text>
-                      <TextInput
-                        onChangeText={(text) =>
+                      <RadioButton
+                        value="yes"
+                        color="#63b467"
+                        status={checked === "yes" ? "checked" : "unchecked"}
+                        onPress={() =>
                           setState((prev) => ({
                             ...prev,
-                            otherReason: text,
+                            checked: "yes",
+                            cardClr: "#63b467",
                           }))
                         }
-                        placeholder="Type the Reason"
                       />
-                      {state.error && (
-                        <Text style={{ color: "red" }}>Enter the reason</Text>
-                      )}
                     </View>
+                    <View style={{ alignItems: "center" }}>
+                      <Entypo size={35} color={"#f74d49"} name="thumbs-down" />
+
+                      <RadioButton
+                        value="no"
+                        color="#f74d49"
+                        status={checked === "no" ? "checked" : "unchecked"}
+                        onPress={() =>
+                          setState((prev) => ({
+                            ...prev,
+                            checked: "no",
+                            cardClr: "#f74d49",
+                          }))
+                        }
+                      />
+                    </View>
+                  </View>
+                  {checked === "no" && (
+                    <Pressable onPress={onHandleSelectReason}>
+                      <View style={{ marginHorizontal: 5, marginVertical: 5 }}>
+                        <Text
+                          style={{
+                            fontSize: 15,
+                            color: "black",
+                            fontWeight: 700,
+                          }}
+                        >
+                          Reason
+                        </Text>
+                        <View style={{}}>
+                          {reason.map((item) => {
+                            return (
+                              <Chip
+                                key={item.id}
+                                style={{ width: 300, marginVertical: 10 }}
+                                onPress={() =>
+                                  onChooseReason(item.reason, item.id)
+                                }
+                                selected={item.id === state.selectedReason}
+                                selectedColor={
+                                  item.id === state.selectedReason
+                                    ? "red"
+                                    : "black"
+                                }
+                              >
+                                {item.reason}
+                              </Chip>
+                            );
+                          })}
+                        </View>
+                      </View>
+                      {state.reason === "Other reason" && (
+                        <View>
+                          <Text
+                            style={{
+                              color: "black",
+                              marginLeft: 5,
+                              fontWeight: 800,
+                              marginBottom: 15,
+                            }}
+                          >
+                            Other Reason
+                          </Text>
+                          <TextInput
+                            onChangeText={(text) =>
+                              setState((prev) => ({
+                                ...prev,
+                                otherReason: text,
+                              }))
+                            }
+                            placeholder="Type the Reason"
+                          />
+                          {state.error && (
+                            <Text style={{ color: "red" }}>
+                              Enter the reason
+                            </Text>
+                          )}
+                        </View>
+                      )}
+                    </Pressable>
                   )}
-                </Pressable>
-              )}
 
-              <Text
-                style={{
-                  textAlign: "center",
-                  fontSize: 18,
-                  backgroundColor: cardClr,
-                  borderBottomLeftRadius: 40,
-                  borderBottomRightRadius: 40,
-                  color: "white",
-                  width: width - 40,
-                  height: 50,
+                  <Text
+                    style={{
+                      textAlign: "center",
+                      fontSize: 18,
+                      backgroundColor: cardClr,
+                      borderBottomLeftRadius: 40,
+                      borderBottomRightRadius: 40,
+                      color: "white",
+                      width: width - 40,
+                      height: 50,
 
-                  paddingTop: 10,
-                  position: "absolute",
-                  bottom: 0,
-                }}
-                onPress={onSubmitReason}
-              >
-                Submit
-              </Text>
-            </View>
-          </>
-        }
-      />
-      <ReactNativeModal
-        isVisible={isOpenEdit}
-        swipeDirection="left"
-        onBackButtonPress={onHandleClose}
-        onBackdropPress={onHandleClose}
-        children={
-          <View
-            style={{
-              width: width - 40,
-              flex: 0.8,
-              backgroundColor: "white",
-              borderRadius: 20,
-            }}
-          >
-            <View
-              style={{
-                flex: 0.1,
-                backgroundColor: "#eebf80",
-                alignItems: "center",
-                paddingLeft: 15,
-                flexDirection: "row",
-              }}
-            >
-              <MaterialCommunityIcons
-                size={23}
-                color={"white"}
-                name="circle-edit-outline"
-              />
-              <Text
+                      paddingTop: 10,
+                      position: "absolute",
+                      bottom: 0,
+                    }}
+                    onPress={onSubmitReason}
+                  >
+                    Submit
+                  </Text>
+                </View>
+              </>
+            }
+          />
+          <ReactNativeModal
+            isVisible={isOpenEdit}
+            swipeDirection="left"
+            onBackButtonPress={() =>
+              setState((prev) => ({
+                ...prev,
+                isOpenEdit: false,
+              }))
+            }
+            onBackdropPress={() =>
+              setState((prev) => ({
+                ...prev,
+                isOpenEdit: false,
+              }))
+            }
+            style={{ alignItems: "center" }}
+            children={
+              <View
                 style={{
-                  color: "white",
-                  fontWeight: 700,
-                  fontSize: 20,
-                  marginLeft: 5,
+                  width: width,
+                  flex: 0.7,
+                  // backgroundColor: "white",
+                  alignItems: "center",
                 }}
               >
-                Edit event
-              </Text>
-            </View>
-            <View style={{ flex: 0.9 }}>
-              <TextInput />
-            </View>
-          </View>
-        }
-      />
+                <AddEvent setState={setState} item={selectedEvent} isEdit />
+              </View>
+            }
+          />
+        </>
+      )}
     </SafeAreaView>
   );
 }

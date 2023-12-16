@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { View, StyleSheet } from "react-native";
+import { View, StyleSheet, Alert } from "react-native";
 
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import {
@@ -152,7 +152,7 @@ export default function BottomNavigator({ set, role }) {
               borderBottomRightRadius: 50,
             },
             headerBackgroundContainerStyle: {
-              backgroundColor: "white",
+              backgroundColor: "whitesmoke",
             },
             headerTitleStyle: {
               color: "white",

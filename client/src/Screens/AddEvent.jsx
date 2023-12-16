@@ -9,6 +9,8 @@ import ReactNativeModal from "react-native-modal";
 import TimePicker from "@react-native-community/datetimepicker";
 import {
   addEventAction,
+  editEventAction,
+  getEventDetailsAction,
   getUserDetailsAction,
   updateEvents,
 } from "../Redux/slices/EventAuthReducer";
@@ -41,7 +43,11 @@ const schema = yup.object().shape({
   eventName: yup.string().required("Field is required"),
 });
 
-const AddEvent = () => {
+const AddEvent = ({
+  isEdit = false,
+  item = {},
+  setState = () => console.log(),
+}) => {
   const {
     control,
     handleSubmit,
@@ -52,13 +58,14 @@ const AddEvent = () => {
       eventName: "",
     },
   });
+
   const { height, width } = Dimensions.get("screen");
   const [state, set] = useState(initialState());
   const { profileNames } = useSelector((state) => state.eventAuth);
   const dispatch = useDispatch();
   const route = useRoute();
   const navigation = useNavigation();
-  console.log(route, "rr");
+
   const {
     startDate,
     endDate,
@@ -177,12 +184,15 @@ const AddEvent = () => {
         break;
     }
   };
-  console.log(profileNames);
 
   const onHandleAddEvent = async (formData) => {
     try {
       const value = await AsyncStorage.getItem("token");
+      const userId = await AsyncStorage.getItem("userId");
+      const Role = await AsyncStorage.getItem("userRole");
+      const profileId = await AsyncStorage.getItem("profileId");
       if (value !== null) {
+        const eventId = isEdit && item.eventId;
         const newEvent = {
           eventName: formData.eventName,
           participants: participants,
@@ -194,10 +204,19 @@ const AddEvent = () => {
           token: value,
           startTime: startTime,
           endTime: endTime,
+          eventId: eventId,
         };
-
-        await dispatch(addEventAction(newEvent));
-        await navigation.navigate("UserDashBoard");
+        if (isEdit) {
+          dispatch(editEventAction(newEvent));
+          dispatch(getEventDetailsAction({ userId: userId, id: profileId }));
+          setState((prev) => ({
+            ...prev,
+            isOpenEdit: false,
+          }));
+        } else {
+          dispatch(addEventAction(newEvent));
+        }
+        navigation.navigate("UserDashBoard");
         onClear();
       }
     } catch (e) {
@@ -208,8 +227,7 @@ const AddEvent = () => {
     <View
       style={{
         flex: 1,
-
-        alignItems: "center",
+        alignItems: isEdit ? "flex-start" : "center",
         // justifyContent: "center",
       }}
     >
@@ -217,11 +235,15 @@ const AddEvent = () => {
         style={{
           width: width - 30,
           padding: 5,
-          // backgroundColor: "whitesmoke",
-          marginTop: 80,
+          backgroundColor: "white",
+          marginTop: 70,
           height: height - 350,
           position: "relative",
           paddingTop: 20,
+          paddingBottom: 20,
+          borderBottomRightRadius: 52,
+          borderBottomLeftRadius: 52,
+          paddingHorizontal: 5,
         }}
       >
         <Pressable
@@ -239,219 +261,232 @@ const AddEvent = () => {
           onPress={handleSubmit(onHandleAddEvent)}
         >
           <Text style={{ color: "white", fontWeight: 900, fontSize: 18 }}>
-            Add Event
+            {isEdit ? "Edit Event" : "Add Event "}
           </Text>
         </Pressable>
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            marginVertical: 5,
-          }}
-        >
-          <FontAwesome5
-            style={{ marginRight: 5 }}
-            color={"#eebf80"}
-            size={20}
-            name="edit"
-          />
-          <View>
-            <Controller
-              control={control}
-              rules={{
-                required: true,
-              }}
-              render={({ field: { onChange, value } }) => (
-                <TextInput
-                  onChangeText={onChange}
-                  value={value}
-                  placeholder="Event Name"
-                  style={{
-                    width: width - 100,
-                    height: 45,
-                    marginLeft: 5,
-                    backgroundColor: "white",
-                    color: "black",
-                    fontWeight: "600",
-                  }}
-                />
-              )}
-              name="eventName"
+        <View style={{ marginTop: 40, marginLeft: 15 }}>
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              marginVertical: 5,
+            }}
+          >
+            <FontAwesome5
+              style={{ marginRight: 5 }}
+              color={"#eebf80"}
+              size={20}
+              name="edit"
             />
-            <Text style={{ marginLeft: 15, color: "red" }}>
-              {errors.eventName ? errors.eventName.message : ""}
+            <View>
+              <Controller
+                control={control}
+                rules={{
+                  required: true,
+                }}
+                render={({ field: { onChange, value } }) => (
+                  <TextInput
+                    onChangeText={onChange}
+                    placeholder="Event Name"
+                    style={{
+                      width: width - 100,
+                      height: 45,
+                      marginLeft: 5,
+                      backgroundColor: "white",
+                      color: "black",
+                      fontWeight: "600",
+                    }}
+                  />
+                )}
+                name="eventName"
+              />
+              <Text style={{ marginLeft: 15, color: "red" }}>
+                {errors.eventName ? errors.eventName.message : ""}
+              </Text>
+            </View>
+          </View>
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              marginVertical: 5,
+            }}
+          >
+            <FontAwesome5
+              style={{ marginRight: 5 }}
+              color={"#eebf80"}
+              size={20}
+              name="user-alt"
+            />
+            <TextInput
+              placeholder="@allparticipents"
+              style={{
+                width: width - 100,
+                height: 45,
+                marginLeft: 5,
+                backgroundColor: "white",
+                fontWeight: "700",
+              }}
+              onChangeText={(text) => onChangeText(text, "")}
+              disabled={true}
+              placeholderTextColor={"#eebf80"}
+            />
+          </View>
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              marginVertical: 15,
+            }}
+          >
+            <Switch
+              value={isAllDay}
+              color="#eebf80"
+              onChange={onChangeSwitch}
+            />
+            <Text style={{ color: "black", marginHorizontal: 5 }}>
+              Every day
             </Text>
           </View>
-        </View>
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            marginVertical: 5,
-          }}
-        >
-          <FontAwesome5
-            style={{ marginRight: 5 }}
-            color={"#eebf80"}
-            size={20}
-            name="user-alt"
-          />
-          <TextInput
-            placeholder="@allparticipents"
+          <View
             style={{
-              width: width - 100,
-              height: 45,
-              marginLeft: 5,
-              backgroundColor: "white",
-              fontWeight: "700",
+              flexDirection: "row",
+              alignItems: "center",
+              marginVertical: 15,
             }}
-            onChangeText={(text) => onChangeText(text, "")}
-            disabled={true}
-            placeholderTextColor={"#eebf80"}
-          />
-        </View>
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            marginVertical: 15,
-          }}
-        >
-          <Switch value={isAllDay} color="#eebf80" onChange={onChangeSwitch} />
-          <Text style={{ color: "black", marginHorizontal: 5 }}>Every day</Text>
-        </View>
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            marginVertical: 15,
-          }}
-        >
-          <View style={{ flex: 0.6 }}>
-            <View style={{ marginVertical: 10, flexDirection: "row" }}>
-              <View style={{ flex: 0.2 }}>
-                <FontAwesome5
-                  style={{ marginRight: 5, marginBottom: 2 }}
-                  color={"#eebf80"}
-                  size={20}
-                  name="calendar"
-                />
-                <Text style={{ color: "grey", fontWeight: 600 }}>Start</Text>
+          >
+            <View style={{ flex: 0.6 }}>
+              <View style={{ marginVertical: 10, flexDirection: "row" }}>
+                <View style={{ flex: 0.2 }}>
+                  <FontAwesome5
+                    style={{ marginRight: 5, marginBottom: 2 }}
+                    color={"#eebf80"}
+                    size={20}
+                    name="calendar"
+                  />
+                  <Text style={{ color: "grey", fontWeight: 600 }}>Start</Text>
+                </View>
+                <View
+                  style={{
+                    flex: 0.8,
+                    justifyContent: "center",
+                    marginLeft: 17,
+                  }}
+                >
+                  <Pressable onPress={() => onHanldeCalenderPress("startDate")}>
+                    <Text
+                      style={{
+                        color: "#00000080",
+                        fontWeight: 800,
+                        fontSize: 14,
+                      }}
+                    >
+                      {startDate}
+                    </Text>
+                  </Pressable>
+                </View>
               </View>
-              <View
-                style={{
-                  flex: 0.8,
-                  justifyContent: "center",
-                  marginLeft: 17,
-                }}
-              >
-                <Pressable onPress={() => onHanldeCalenderPress("startDate")}>
-                  <Text
-                    style={{
-                      color: "#00000080",
-                      fontWeight: 800,
-                      fontSize: 14,
-                    }}
-                  >
-                    {startDate}
-                  </Text>
-                </Pressable>
-              </View>
-            </View>
-            <View style={{ marginVertical: 10, flexDirection: "row" }}>
-              <View style={{ flex: 0.2 }}>
-                <FontAwesome5
-                  style={{ marginRight: 5, marginBottom: 2 }}
-                  color={"#eebf80"}
-                  size={20}
-                  name="calendar"
-                />
-                <Text style={{ color: "grey", fontWeight: 600 }}>End</Text>
-              </View>
-              <View
-                style={{
-                  flex: 0.8,
-                  justifyContent: "center",
-                  marginLeft: 20,
-                }}
-              >
-                <Pressable onPress={() => onHanldeCalenderPress("endDate")}>
-                  <Text
-                    style={{
-                      color: "#00000080",
-                      fontWeight: 800,
-                      fontSize: 14,
-                    }}
-                  >
-                    {endDate}
-                  </Text>
-                </Pressable>
+              <View style={{ marginVertical: 10, flexDirection: "row" }}>
+                <View style={{ flex: 0.2 }}>
+                  <FontAwesome5
+                    style={{ marginRight: 5, marginBottom: 2 }}
+                    color={"#eebf80"}
+                    size={20}
+                    name="calendar"
+                  />
+                  <Text style={{ color: "grey", fontWeight: 600 }}>End</Text>
+                </View>
+                <View
+                  style={{
+                    flex: 0.8,
+                    justifyContent: "center",
+                    marginLeft: 20,
+                  }}
+                >
+                  <Pressable onPress={() => onHanldeCalenderPress("endDate")}>
+                    <Text
+                      style={{
+                        color: "#00000080",
+                        fontWeight: 800,
+                        fontSize: 14,
+                      }}
+                    >
+                      {endDate}
+                    </Text>
+                  </Pressable>
+                </View>
               </View>
             </View>
-          </View>
-          <View style={{ flex: 0.4 }}>
-            <View style={{ marginVertical: 10, flexDirection: "row" }}>
-              <View style={{ flex: 0.3 }}>
-                <FontAwesome5
-                  style={{ marginRight: 5, marginBottom: 2 }}
-                  color={"#eebf80"}
-                  size={20}
-                  name="clock"
-                />
-                <Text style={{ color: "grey", fontWeight: 600, fontSize: 11 }}>
-                  Time
-                </Text>
-              </View>
-              <View
-                style={{
-                  flex: 0.8,
-                  justifyContent: "center",
-                  marginLeft: 20,
-                }}
-              >
-                <Pressable onPress={() => onHanldeCalenderPress("startTime")}>
+            <View style={{ flex: 0.4 }}>
+              <View style={{ marginVertical: 10, flexDirection: "row" }}>
+                <View style={{ flex: 0.3 }}>
+                  <FontAwesome5
+                    style={{ marginRight: 5, marginBottom: 2 }}
+                    color={"#eebf80"}
+                    size={20}
+                    name="clock"
+                  />
                   <Text
-                    style={{
-                      color: "#00000080",
-                      fontWeight: 800,
-                      fontSize: 14,
-                    }}
+                    style={{ color: "grey", fontWeight: 600, fontSize: 11 }}
                   >
-                    {startTime}
+                    Time
                   </Text>
-                </Pressable>
+                </View>
+                <View
+                  style={{
+                    flex: 0.8,
+                    justifyContent: "center",
+                    marginLeft: 20,
+                  }}
+                >
+                  <Pressable onPress={() => onHanldeCalenderPress("startTime")}>
+                    <Text
+                      style={{
+                        color: "#00000080",
+                        fontWeight: 800,
+                        fontSize: 14,
+                      }}
+                    >
+                      {startTime}
+                    </Text>
+                  </Pressable>
+                </View>
               </View>
-            </View>
-            <View style={{ marginVertical: 10, flexDirection: "row" }}>
-              <View style={{ flex: 0.3 }}>
-                <FontAwesome5
-                  style={{ marginRight: 5, marginBottom: 2 }}
-                  color={"#eebf80"}
-                  size={20}
-                  name="clock"
-                />
-                <Text style={{ color: "grey", fontWeight: 600, fontSize: 11 }}>
-                  Time
-                </Text>
-              </View>
-              <View
-                style={{
-                  flex: 0.8,
-                  justifyContent: "center",
-                  marginLeft: 20,
-                }}
-              >
-                <Pressable onPress={(date) => onHanldeCalenderPress("endTime")}>
+              <View style={{ marginVertical: 10, flexDirection: "row" }}>
+                <View style={{ flex: 0.3 }}>
+                  <FontAwesome5
+                    style={{ marginRight: 5, marginBottom: 2 }}
+                    color={"#eebf80"}
+                    size={20}
+                    name="clock"
+                  />
                   <Text
-                    style={{
-                      color: "#00000080",
-                      fontWeight: 800,
-                      fontSize: 14,
-                    }}
+                    style={{ color: "grey", fontWeight: 600, fontSize: 11 }}
                   >
-                    {endTime}
+                    Time
                   </Text>
-                </Pressable>
+                </View>
+                <View
+                  style={{
+                    flex: 0.8,
+                    justifyContent: "center",
+                    marginLeft: 20,
+                  }}
+                >
+                  <Pressable
+                    onPress={(date) => onHanldeCalenderPress("endTime")}
+                  >
+                    <Text
+                      style={{
+                        color: "#00000080",
+                        fontWeight: 800,
+                        fontSize: 14,
+                      }}
+                    >
+                      {endTime}
+                    </Text>
+                  </Pressable>
+                </View>
               </View>
             </View>
           </View>

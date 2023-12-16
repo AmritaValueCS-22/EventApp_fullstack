@@ -1,12 +1,16 @@
 import React, { useState } from "react";
-import { View } from "react-native";
+import { Pressable, View } from "react-native";
 import { DataTable, Text, TextInput } from "react-native-paper";
+import CalendarPicker from "react-native-calendar-picker";
+import ReactNativeModal from "react-native-modal";
+import moment from "moment";
 
 const itemsPerPage = 10; // Set the number of items per page
 
 const ColorfulTableWithPagination = ({ attendence }) => {
   const [page, setPage] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
+  const [openDate, setOpenDate] = useState(false);
 
   const totalPages = Math.ceil(attendence.length / itemsPerPage);
 
@@ -14,7 +18,10 @@ const ColorfulTableWithPagination = ({ attendence }) => {
   const end = (page + 1) * itemsPerPage;
 
   const filteredData = attendence.filter((rowData) =>
-    rowData.StartDate.toLowerCase().includes(searchQuery.toLowerCase())
+    moment(rowData?.StartDate)
+      .format("YYYY-MM-DD")
+      .toLowerCase()
+      .includes(searchQuery?.toLowerCase())
   );
 
   const paginatedData = filteredData.slice(start, end);
@@ -23,23 +30,29 @@ const ColorfulTableWithPagination = ({ attendence }) => {
     setPage(selectedPage);
   };
 
-  const handleSearch = (query) => {
-    setSearchQuery(query);
-    setPage(0); // Reset page when the search query changes
+  const openModel = () => {
+    setOpenDate(true);
+  };
+  const onHandlChange = (date) => {
+    const search = moment(date).format("YYYY-MM-DD");
+    setSearchQuery(search);
+    setPage(0);
   };
 
   return (
     <View style={{ marginTop: 55 }}>
-      <TextInput
-        label="Search StartDate"
-        value={searchQuery}
-        onChangeText={handleSearch}
-        style={{ margin: 10 }}
-      />
+      <Pressable onPress={openModel}>
+        <TextInput
+          label="Search StartDate"
+          value={searchQuery}
+          style={{ margin: 10 }}
+          disabled={true}
+        />
+      </Pressable>
 
       <DataTable>
         <DataTable.Header>
-          {["No", "Name", "StartDate", "Attendence", "Reason"].map(
+          {["No", "Name", "E.Name", "StartDate", "Reason", "Attendence"].map(
             (head, index) => (
               <DataTable.Title key={index} style={{ fontWeight: "bold" }}>
                 {head}
@@ -65,6 +78,28 @@ const ColorfulTableWithPagination = ({ attendence }) => {
         onPageChange={(page) => handleChangePage(page)}
         label={`${page + 1} of ${totalPages}`}
       />
+      <ReactNativeModal
+        style={{ margin: 0 }}
+        // backdropColor="green"
+        isVisible={openDate}
+        onBackdropPress={() => {
+          setOpenDate(false);
+        }}
+      >
+        <View
+          style={{
+            backgroundColor: "white",
+            height: 400,
+            justifyContent: "center",
+            margin: 0,
+          }}
+        >
+          <CalendarPicker
+            maxDate={new Date(2050, 6, 3)}
+            onDateChange={onHandlChange}
+          />
+        </View>
+      </ReactNativeModal>
     </View>
   );
 };

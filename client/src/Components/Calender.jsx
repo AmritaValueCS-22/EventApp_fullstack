@@ -6,17 +6,15 @@ import AsyncStorage from "@react-native-community/async-storage";
 import { useSelector } from "react-redux";
 import FontAwsom5 from "react-native-vector-icons/MaterialCommunityIcons";
 import { useNavigation } from "@react-navigation/native";
+import EmptyScreen from "../Screens/EmptyScreen";
+import moment from "moment";
 
-const Calender = ({ onHandleClick, role }) => {
+const Calender = ({ onHandleClick, role, logged, showmodel }) => {
   const { eventDetails } = useSelector((state) => state.eventAuth);
-  const navigation = useNavigation();
+  console.log(eventDetails, "eventDetails");
 
   const renderEmptyData = () => {
-    return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <Text>No events available</Text>
-      </View>
-    );
+    return <EmptyScreen title="No Events available " />;
   };
   return (
     <Agenda
@@ -56,7 +54,7 @@ const Calender = ({ onHandleClick, role }) => {
                   fontSize: 12,
                 }}
               >
-                {item.startTime} - {item.endTime}
+                {item?.startTime} - {item?.endTime}
               </Text>
               <Text style={styles.itemText}>{item.eventName}</Text>
             </View>
@@ -72,16 +70,25 @@ const Calender = ({ onHandleClick, role }) => {
                 <FontAwsom5
                   onPress={() => onHandleClick(item)}
                   size={23}
-                  color={item.isLog ? "green" : "red"}
+                  color={
+                    moment(item.StartDate)
+                      .format("YYYY-MM-DD")
+                      .toLowerCase() ===
+                    moment().format("YYYY-MM-DD").toLowerCase()
+                      ? "grey"
+                      : "red"
+                  }
                   name="checkbox-marked-circle-outline"
-                  disabled={item.isLog}
+                  disabled={
+                    item.isLog &&
+                    moment(item.startTime).format("YYYY-MM-DD") ===
+                      moment().format("YYYY-MM-DD")
+                  }
                 />
               )}
               {role === "organizer" && (
                 <FontAwsom5
-                  onPress={() =>
-                    navigation.navigate("AddEvent", { ...item, isEdit: true })
-                  }
+                  onPress={() => showmodel(item)}
                   size={23}
                   color={"green"}
                   name="circle-edit-outline"

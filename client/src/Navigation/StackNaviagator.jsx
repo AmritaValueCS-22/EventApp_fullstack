@@ -28,7 +28,7 @@ const StackNaviagator = () => {
   const [isLoggedIn, set] = useState(false);
   const [role, setRole] = useState("");
 
-  const { loginData, showSplash, isLoading } = useSelector(
+  const { loginData, showSplash, isLoading, refresh } = useSelector(
     (state) => state.eventAuth
   );
   const config = {
