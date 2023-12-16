@@ -113,7 +113,7 @@ export const signup = async (req, res) => {
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
-    console.log(password);
+
     const user = await User.findOne({ email });
 
     const hashPassword = await bcrypt.hash(password, 10);
@@ -124,7 +124,7 @@ export const login = async (req, res) => {
     // );
     if (user) {
       const token = generateToken(user);
-      console.log(token);
+
       return res.status(StatusCodes.OK).json({
         message: "Login successful",
         userRole: user.userRole,

@@ -7,7 +7,7 @@ export const addProfile = async (req, res) => {
     const { userId } = req.user;
 
     const userProfileData = req.body;
-    console.log("userProfileData", userProfileData);
+
     const user = await User.findOne({ userId });
 
     if (!user) {
@@ -46,7 +46,7 @@ export const editProfile = async (req, res) => {
     const findProfile = user.profile.find((profile) => {
       return profile.id === userProfileData.id;
     });
-    console.log(findProfile, userProfileData, "hello");
+
     await user.save();
     if (!findProfile || !user) {
       return res.status(StatusCodes.BAD_REQUEST).json({
@@ -76,12 +76,12 @@ export const deleteProfile = async (req, res) => {
   try {
     const { userId } = req.params;
     const { id } = req.query;
-    console.log(userId, id);
+
     const user = await User.findOne({ userId });
     const findProfileIndex = user.profile.findIndex((profile) => {
       return profile.id === id;
     });
-    console.log(findProfileIndex);
+
     if (!user) {
       return res.status(StatusCodes.BAD_REQUEST).json({
         message: "User not found",

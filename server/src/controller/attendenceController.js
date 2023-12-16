@@ -87,12 +87,11 @@ export const getAttedence = async (req, res) => {
     allUsers.map((item) => {
       if (item.username !== "admin") {
         item.profile.map((attedences) => {
-          console.log(attedences.attedence);
           attedenceUser = [...attedences.attedence, ...attedenceUser];
         });
       }
     });
-    console.log(attedenceUser);
+
     if (user.userRole === "organizer") {
       res.status(StatusCodes.OK).json({
         message: "username fetched",

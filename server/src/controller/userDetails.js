@@ -97,7 +97,6 @@ export const getAllProfileNames = async (req, res) => {
     });
 
     if (user.userRole === "organizer") {
-      console.log(profileNames);
       res.status(StatusCodes.OK).json({
         message: "profileName is fetched",
         statuscode: 200,
@@ -135,7 +134,7 @@ const getUserProfileEvents = (user, id) => {
 export const getEvents = async (req, res) => {
   try {
     const { userId, id } = req.query;
-    console.log(userId, id);
+
     if (!userId || userId === "") {
       return res.status(StatusCodes.BAD_REQUEST).json({
         message: "Invalid user ID",
@@ -178,7 +177,6 @@ const getUserProfileAttendence = (user, id) => {
   const attedence = [];
   user.profile.forEach((item) => {
     if (id === item.id) {
-      console.log(item.attedence);
       attedence.push(...item.attedence);
     }
   });
@@ -197,7 +195,7 @@ const getOrganizerAttendence = (user) => {
 export const getAttendence = async (req, res) => {
   try {
     const { userId, id } = req.query;
-    console.log(userId, id, "f");
+
     if (!userId || userId === "") {
       return res.status(StatusCodes.BAD_REQUEST).json({
         message: "Invalid user ID",
