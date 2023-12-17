@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import React, { useEffect, useState } from "react";
 import { Agenda } from "react-native-calendars";
 import AsyncStorage from "@react-native-community/async-storage";
@@ -11,8 +11,7 @@ import moment from "moment";
 
 const Calender = ({ onHandleClick, role, logged, showmodel }) => {
   const { eventDetails } = useSelector((state) => state.eventAuth);
-  console.log(eventDetails, "eventDetails");
-
+  console.log(eventDetails);
   const renderEmptyData = () => {
     return <EmptyScreen title="No Events available " />;
   };
@@ -54,6 +53,7 @@ const Calender = ({ onHandleClick, role, logged, showmodel }) => {
                   fontSize: 12,
                 }}
               >
+                {console.log(item.startDate, "start")}
                 {item?.startTime} - {item?.endTime}
               </Text>
               <Text style={styles.itemText}>{item.eventName}</Text>
@@ -66,25 +66,16 @@ const Calender = ({ onHandleClick, role, logged, showmodel }) => {
                 alignItems: "center",
               }}
             >
-              {role !== "organizer" && (
-                <FontAwsom5
-                  onPress={() => onHandleClick(item)}
-                  size={23}
-                  color={
-                    moment(item.StartDate)
-                      .format("YYYY-MM-DD")
-                      .toLowerCase() ===
-                    moment().format("YYYY-MM-DD").toLowerCase()
-                      ? "grey"
-                      : "red"
-                  }
-                  name="checkbox-marked-circle-outline"
-                  disabled={
-                    item.isLog &&
-                    moment(item.startTime).format("YYYY-MM-DD") ===
-                      moment().format("YYYY-MM-DD")
-                  }
-                />
+              {role !== "organizer" && item.isEnable && (
+                <Pressable>
+                  <FontAwsom5
+                    onPress={() => onHandleClick(item)}
+                    size={23}
+                    color={item.isLoggedin ? "green" : "red"}
+                    name="checkbox-marked-circle-outline"
+                    disabled={item.isLoggedin ? true : false}
+                  />
+                </Pressable>
               )}
               {role === "organizer" && (
                 <FontAwsom5

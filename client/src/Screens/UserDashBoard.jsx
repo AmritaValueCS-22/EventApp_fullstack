@@ -20,7 +20,6 @@ const UserDashBoard = () => {
 
   const route = useRoute();
   const dispatch = useDispatch();
-  console.log(attedence, "attedence");
 
   const getUserDetails = async () => {
     try {

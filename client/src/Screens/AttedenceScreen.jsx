@@ -7,7 +7,6 @@ import moment from "moment";
 import EmptyScreen from "./EmptyScreen";
 
 const AttedenceScreen = ({ attedence, userRole }) => {
-  console.log(attedence, "ye");
   const transformedData =
     attedence.length > 0 &&
     attedence.map((item, index) => ({

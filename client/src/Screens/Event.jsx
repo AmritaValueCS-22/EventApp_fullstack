@@ -96,7 +96,7 @@ function Event() {
       isOpenEdit: false,
     }));
   };
-  console.log(refresh, "refresh");
+
   const onHandleSelectReason = () => {
     setState((prev) => ({
       ...prev,
@@ -126,6 +126,7 @@ function Event() {
       const userId = await AsyncStorage.getItem("userId");
       const name = await AsyncStorage.getItem("userName");
       const phoneNumber = await AsyncStorage.getItem("phoneNumber");
+      const parentName = await AsyncStorage.getItem("parentName");
 
       const newAttedence = {
         eventName: state.items.eventName,
@@ -143,8 +144,8 @@ function Event() {
         eventId: state.items.eventId,
         phoneNumber,
         name,
+        parentName,
       };
-      console.log(newAttedence);
 
       dispatch(addAttedence(newAttedence));
       dispatch(getEventDetailsAction({ userId: userId, id: id }));
@@ -158,9 +159,7 @@ function Event() {
         diableAttedence: true,
         logged: true,
       }));
-    } catch (error) {
-      console.log(error);
-    }
+    } catch (error) {}
   };
 
   useEffect(() => {

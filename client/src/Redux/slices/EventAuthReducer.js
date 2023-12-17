@@ -7,6 +7,7 @@ import Toast from "react-native-toast-message";
 
 const initialState = {
   isLoading: false,
+  isLoadingSignup: false,
   userProfileList: [],
   UserData: [],
   eventDetails: {},
@@ -26,7 +27,7 @@ const initialState = {
 export const signupAction = createAsyncThunk(
   "eventauth/eventSignup",
   async (body) => {
-    const response = await fetch("http://192.168.56.1:5000/auth/signup", {
+    const response = await fetch("http://123.63.2.13:3000/auth/signup", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -66,7 +67,7 @@ export const profileAction = createAsyncThunk(
   "eventauth/eventLogin",
   async (body) => {
     const response = await fetch(
-      "http://192.168.56.1:5000/profile/add-profile",
+      "http://123.63.2.13:3000/profile/add-profile",
       {
         method: "POST",
         headers: {
@@ -102,7 +103,7 @@ export const AddProfileAction = createAsyncThunk(
       Authorization: body.token,
     };
     const response = await fetch(
-      "http://192.168.56.1:5000/profile/add-profile",
+      "http://123.63.2.13:3000/profile/add-profile",
       {
         method: "POST",
         headers,
@@ -131,7 +132,7 @@ export const getUserDetailsAction = createAsyncThunk(
   "eventauth/userDetails",
   async (userId) => {
     const response = await fetch(
-      `http://192.168.56.1:5000/user/userDetails?userId=${userId}`,
+      `http://123.63.2.13:3000/user/userDetails?userId=${userId}`,
       {
         method: "GET",
         headers: {
@@ -160,7 +161,7 @@ export const getUserDetailsAction = createAsyncThunk(
 export const addEventAction = createAsyncThunk(
   "eventauth/addEvent",
   async (body) => {
-    const response = await fetch("http://192.168.56.1:5000/events/add-event", {
+    const response = await fetch("http://123.63.2.13:3000/events/add-event", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -189,9 +190,8 @@ export const addEventAction = createAsyncThunk(
 export const editEventAction = createAsyncThunk(
   "eventauth/editEvent",
   async (body) => {
-    console.log(body);
     const response = await fetch(
-      `http://192.168.56.1:5000/events/edit-event?eventId=${body.eventId}`,
+      `http://123.63.2.13:3000/events/edit-event?eventId=${body.eventId}`,
       {
         method: "POST",
         headers: {
@@ -222,7 +222,7 @@ export const editEventAction = createAsyncThunk(
 export const loginAction = createAsyncThunk(
   "eventauth/eventLogin",
   async (body) => {
-    const response = await fetch("http://192.168.56.1:5000/auth/login", {
+    const response = await fetch("http://123.63.2.13:3000/auth/login", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -236,7 +236,7 @@ export const loginAction = createAsyncThunk(
       await AsyncStorage.setItem("userId", result.userId);
       await AsyncStorage.setItem("userRole", result.userRole);
       await AsyncStorage.setItem("phoneNumber", result.phoneNumber);
-      console.log(result.token);
+
       Toast.show({
         type: "SuccessToast",
         text1: result.message,
@@ -256,7 +256,7 @@ export const getAllNamesAction = createAsyncThunk(
   "eventauth/userNames",
   async (body) => {
     const response = await fetch(
-      `http://192.168.56.1:5000/user/profileName?userId=${body.userId}`,
+      `http://123.63.2.13:3000/user/profileName?userId=${body.userId}`,
       {
         method: "GET",
         headers: {
@@ -285,17 +285,14 @@ export const getAllNamesAction = createAsyncThunk(
 export const addAttedence = createAsyncThunk(
   "eventauth/addAttedence",
   async (body) => {
-    const response = await fetch(
-      "http://192.168.56.1:5000/user/attedence/add",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: body.token,
-        },
-        body: JSON.stringify(body),
-      }
-    );
+    const response = await fetch("http://123.63.2.13:3000/user/attedence/add", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: body.token,
+      },
+      body: JSON.stringify(body),
+    });
     const result = await response.json();
 
     if (result.statuscode === 200) {
@@ -318,7 +315,7 @@ export const getAllAttedence = createAsyncThunk(
   "eventauth/getAttedence",
   async (userId) => {
     const response = await fetch(
-      `http://192.168.56.1:5000/user/attedence/getAttedence?userId=${userId}`,
+      `http://123.63.2.13:3000/user/attedence/getAttedence?userId=${userId}`,
       {
         method: "GET",
         headers: {
@@ -348,7 +345,7 @@ export const createProfileAction = createAsyncThunk(
   "eventauth/createprofile",
   async (body) => {
     const response = await fetch(
-      `http://192.168.56.1:5000/profile/add-profile`,
+      `http://123.63.2.13:3000/profile/add-profile`,
       {
         method: "POST",
         headers: {
@@ -380,7 +377,7 @@ export const deleteProfileAction = createAsyncThunk(
   "eventauth/deleteProfile",
   async (body) => {
     const response = await fetch(
-      `http://192.168.56.1:5000/profile/deleteProfile/${body.userId}?id=${body.id}`,
+      `http://123.63.2.13:3000/profile/deleteProfile/${body.userId}?id=${body.id}`,
       {
         method: "DELETE",
         headers: {
@@ -410,7 +407,7 @@ export const editProfileAction = createAsyncThunk(
   "eventauth/editProfile",
   async (body) => {
     const response = await fetch(
-      `http://192.168.56.1:5000/profile/editProfile/${body.userId}`,
+      `http://123.63.2.13:3000/profile/editProfile/${body.userId}`,
       {
         method: "PUT",
         headers: {
@@ -441,7 +438,7 @@ export const getEventDetailsAction = createAsyncThunk(
   "eventauth/getEventDetails",
   async (body) => {
     const response = await fetch(
-      `http://192.168.56.1:5000/user/userEvents?userId=${body.userId}&&id=${body.id}`,
+      `http://123.63.2.13:3000/user/userEvents?userId=${body.userId}&&id=${body.id}`,
       {
         method: "GET",
         headers: {
@@ -471,7 +468,7 @@ export const getAttendenceAction = createAsyncThunk(
   "eventauth/getAttendence",
   async (body) => {
     const response = await fetch(
-      `http://192.168.56.1:5000/user/userAttendence?userId=${body.userId}&&id=${body.id}`,
+      `http://123.63.2.13:3000/user/userAttendence?userId=${body.userId}&&id=${body.id}`,
       {
         method: "GET",
         headers: {
@@ -526,13 +523,13 @@ const eventAuthReducer = createSlice({
   extraReducers: (builder) => {
     // signup
     builder.addCase(signupAction.pending, (state) => {
-      state.isLoading = true;
+      state.isLoadingSignup = false;
     });
     builder.addCase(signupAction.fulfilled, (state, action) => {
-      state.isLoading = false;
+      state.isLoadingSignup = true;
     });
     builder.addCase(signupAction.rejected, (state, action) => {
-      state.isLoading = false;
+      state.isLoadingSignup = false;
     });
 
     // login
@@ -618,25 +615,29 @@ const eventAuthReducer = createSlice({
       const result = {};
 
       action.payload?.events?.forEach((event) => {
-        console.log(event, "events");
         const dates = getDifferDate(event.startDate, event.endDate);
         const currentDate = moment().format("YYYY-MM-DD");
+        const yesterdayDate = moment().subtract(1, "day").format("YYYY-MM-DD");
         const startDate = moment(event.startDate).format("YYYY-MM-DD");
-        console.log(currentDate === startDate);
+        const userAttedence = ["2023-12-17", "2023-12-18"];
+
         dates.forEach((date) => {
           result[date] = result[date] || [];
 
+          const isTodayOrYesterday =
+            date === currentDate || date === yesterdayDate;
+          const isLoggedin =
+            event.eventId && event?.userAttendence?.includes(date);
           result[date].push({
             location: event.location,
             eventName: event.eventName,
             startTime: event.startTime,
-
             endTime: event.endTime,
-            startDate: event.startDate,
+            startDate: date,
             endDate: event.endDate,
-            isLog:
-              event.userAttendence && currentDate === startDate ? true : false,
             eventId: event.eventId,
+            isEnable: isTodayOrYesterday,
+            isLoggedin: isLoggedin,
           });
         });
       });

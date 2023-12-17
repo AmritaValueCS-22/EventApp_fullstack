@@ -45,12 +45,13 @@ const schema = yup.object().shape({
 
 const AddEvent = ({
   isEdit = false,
-  item = {},
+  item = false,
   setState = () => console.log(),
 }) => {
   const {
     control,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm({
     resolver: yupResolver(schema),
@@ -65,6 +66,20 @@ const AddEvent = ({
   const dispatch = useDispatch();
   const route = useRoute();
   const navigation = useNavigation();
+  useEffect(() => {
+    if (isEdit && item) {
+      console.log(item);
+      setValue("eventName", item.eventName);
+      set((prev) => ({
+        ...prev,
+        startDate: moment(item.startDate).format("YYYY-MM-DD"),
+        endDate: moment(item.endDate).format("YYYY-MM-DD"),
+        startTime: item.startTime,
+        endTime: item.endTime,
+        isAllDay: item.isAllDay,
+      }));
+    }
+  }, [isEdit, item]);
 
   const {
     startDate,
@@ -85,6 +100,7 @@ const AddEvent = ({
         ...prev,
         participants: profileNames,
       }));
+      setValue("eventName", "");
     });
   }, [profileNames, navigation]);
   const onClear = () => {
@@ -193,6 +209,7 @@ const AddEvent = ({
       const profileId = await AsyncStorage.getItem("profileId");
       if (value !== null) {
         const eventId = isEdit && item.eventId;
+        console.log(item, eventId, isEdit, "hello");
         const newEvent = {
           eventName: formData.eventName,
           participants: participants,
@@ -205,6 +222,7 @@ const AddEvent = ({
           startTime: startTime,
           endTime: endTime,
           eventId: eventId,
+          forAllUser: true,
         };
         if (isEdit) {
           dispatch(editEventAction(newEvent));
@@ -296,6 +314,7 @@ const AddEvent = ({
                       color: "black",
                       fontWeight: "600",
                     }}
+                    value={value}
                   />
                 )}
                 name="eventName"

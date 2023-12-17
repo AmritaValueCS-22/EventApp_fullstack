@@ -68,72 +68,27 @@ export const signup = async (req, res) => {
   }
 };
 
-// export const signup = async (req, res) => {
-//   try {
-//     const {
-//       username,
-//       email,
-//       password,
-//       confirmPassword,
-//       phoneNumber,
-//       userRole,
-//     } = req.body;
-
-//     const checkuserisAlredyThere = await User.find();
-//     console.log(checkuserisAlredyThere);
-//     if (checkuserisAlredyThere) {
-//       console.log("hello");
-//       return res.status(400).json({ error: "User Alredy Register" });
-//     }
-
-//     if (password !== confirmPassword) {
-//       return res.status(400).json({ error: "Passwords do not match." });
-//     }
-
-//     const userData = new User({
-//       username,
-//       email,
-//       password,
-//       confirmPassword,
-//       phoneNumber,
-//       userRole,
-//     });
-//     await user.save();
-
-//     res.status(201).json({
-//       statusCode: 201,
-//       message: `${userRole} registered successfully.`,
-//     });
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ error: "Internal Server Error" });
-//   }
-// };
-
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
     const user = await User.findOne({ email });
 
-    const hashPassword = await bcrypt.hash(password, 10);
-    // console.log(
-    //   hashPassword,
-    //   user.password,
-    //   await bcrypt.compare(hashPassword, user.password)
-    // );
     if (user) {
-      const token = generateToken(user);
+      const isPasswordMatch = await bcrypt.compare(password, user.password);
+      if (isPasswordMatch) {
+        const token = generateToken(user);
 
-      return res.status(StatusCodes.OK).json({
-        message: "Login successful",
-        userRole: user.userRole,
-        userId: user.userId,
-        phoneNumber: user.phoneNumber,
-        token,
-        isUserHaveProfile: user.profile.length > 0,
-        statuscode: 200,
-      });
+        return res.status(StatusCodes.OK).json({
+          message: "Login successful",
+          userRole: user.userRole,
+          userId: user.userId,
+          phoneNumber: user.phoneNumber,
+          token,
+          isUserHaveProfile: user.profile.length > 0,
+          statuscode: 200,
+        });
+      }
     }
     res.status(StatusCodes.BAD_REQUEST).json({
       message: "Invalid credentials",

@@ -95,7 +95,25 @@ const CreateProfile = () => {
       readData();
     });
   }, [navigation]);
-
+  const onHanldeOpneProfile = async (name, id, parentName) => {
+    if (name !== undefined) {
+      await AsyncStorage.setItem(
+        "userName",
+        name === undefined ? "user" : name
+      );
+      await AsyncStorage.setItem("profileId", id === undefined ? 0 : id);
+      await AsyncStorage.setItem(
+        "parentName",
+        parentName === undefined ? "" : parentName
+      );
+      navigation.navigate("BottomNavigator");
+    } else {
+      Toast.show({
+        type: "WarningToast",
+        text1: "Profile Name is Require",
+      });
+    }
+  };
   return (
     <View>
       <View
@@ -170,17 +188,13 @@ const CreateProfile = () => {
                         }}
                       >
                         <Pressable
-                          onPress={async () => {
-                            await AsyncStorage.setItem(
-                              "userName",
-                              item.name === undefined ? "user" : item.name
-                            );
-                            await AsyncStorage.setItem(
-                              "profileId",
-                              item.id === undefined ? 0 : item.id
-                            );
-                            navigation.navigate("BottomNavigator");
-                          }}
+                          onPress={() =>
+                            onHanldeOpneProfile(
+                              item.name,
+                              item.id,
+                              item.parentName
+                            )
+                          }
                         >
                           <Avatar.Image
                             style={{ elevation: 10, shadowColor: "green" }}

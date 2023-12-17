@@ -42,6 +42,7 @@ const initialState = () => {
     roomNumber: "",
     "Parent/Gurdian Name": "",
     "Parent/Gurdian Number": "",
+    parentName: "",
     Relationship: "",
     isOpen: false,
     value: 1,
@@ -94,7 +95,7 @@ const EditProfileScreen = () => {
   };
 
   const OnSubmit = async () => {
-    if (state.name !== "") {
+    if (state.name !== "" && state.parentName !== "") {
       const userId = await AsyncStorage.getItem("userId");
       const newData = {
         id: String(route.params.id),
@@ -106,6 +107,7 @@ const EditProfileScreen = () => {
         nationality: state.nationality,
         buildingName: state.buildingName,
         roomNumber: state.roomNumber,
+        parentName: state.parentName,
         // emergencyContact: {
         //   name: state["Parent/Gurdian Name"],
         //   number: state["Parent/Gurdian Number"],
@@ -113,14 +115,21 @@ const EditProfileScreen = () => {
         // },
         userId: userId,
       };
-      console.log(newData);
+
       dispatch(editProfileAction(newData));
 
       navigation.navigate("CreateProfile");
-    } else {
+    }
+    if (state.name === "") {
       Toast.show({
         type: "WarningToast",
         text1: "Name is Rquired",
+      });
+    }
+    if (state.parentName === "") {
+      Toast.show({
+        type: "WarningToast",
+        text1: "Parent Name is Rquired",
       });
     }
 
@@ -443,6 +452,26 @@ const EditProfileScreen = () => {
             placeholderTextColor={"#eac084"}
           />
         </View>
+        <View style={{ marginVertical: 10 }}>
+          <TextInput
+            onChangeText={(text) => onHandleChange(text, "parentName")}
+            placeholder="ParentName(Father/Mother/Guardian)"
+            mode="outlined"
+            outlineStyle={{
+              backgroundColor: "white",
+              borderColor: "#eac084",
+              fontWeight: "800",
+              borderRadius: 8,
+            }}
+            style={{
+              width: width - 80,
+              backgroundColor: "whitesmoke",
+              fontSize: 14,
+              height: 35,
+            }}
+            placeholderTextColor={"#eac084"}
+          />
+        </View>
         <View
           style={{
             height: 60,
@@ -461,6 +490,7 @@ const EditProfileScreen = () => {
               borderRadius: 40,
             }}
             onPress={OnSubmit}
+            // disabled={state.name === "" || state.parentName === ""}
           >
             <Text
               style={{

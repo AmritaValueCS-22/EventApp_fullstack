@@ -15,6 +15,7 @@ export const attendanceUpdate = async (req, res) => {
       eventId,
       name,
       phoneNumber,
+      parentName,
     } = req.body;
 
     const user = await User.findOne({ userId });
@@ -36,14 +37,12 @@ export const attendanceUpdate = async (req, res) => {
           endDate,
           name,
           phoneNumber,
+          parentName,
         };
-        item.events.map((evt) => {
+
+        item.events.forEach((evt) => {
           if (evt.eventId === eventId) {
-            evt.userAttendence =
-              moment().format("YYYY-MM-DD") ===
-              moment(startDate).format("YYYY-MM-DD")
-                ? true
-                : false;
+            evt.userAttendence = [...evt.userAttendence, startDate];
           }
         });
         item.attedence = item.attedence || [];
@@ -85,7 +84,7 @@ export const getAttedence = async (req, res) => {
     let attedenceUser = [];
     const allUsers = await User.find({});
     allUsers.map((item) => {
-      if (item.username !== "admin") {
+      if (item.username !== "Organizer") {
         item.profile.map((attedences) => {
           attedenceUser = [...attedences.attedence, ...attedenceUser];
         });

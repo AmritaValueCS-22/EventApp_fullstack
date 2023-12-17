@@ -25,7 +25,8 @@ const eventSchema = new mongoose.Schema({
   location: { type: String },
   repeat: { type: String },
   eventId: { type: String },
-  userAttendence: { type: Boolean },
+  userAttendence: [],
+  forAllUser: { type: Boolean },
 });
 const profileSchema = new mongoose.Schema({
   id: { type: String, required: true },
@@ -37,6 +38,7 @@ const profileSchema = new mongoose.Schema({
   roomNumber: { type: String },
   dateOfBirth: { type: String },
   emergencyContact: { type: {} },
+  parentName: { type: String },
   events: [eventSchema],
   attedence: [attedenceSchema],
 });

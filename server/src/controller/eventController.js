@@ -19,6 +19,7 @@ export const addEvent = async (req, res) => {
       startTime,
       endTime,
       repeat,
+      forAllUser,
     } = req.body;
 
     // Find the organizer by userId
@@ -42,6 +43,7 @@ export const addEvent = async (req, res) => {
       repeat,
       eventId: generateUniqueId(),
       userAttendence: false,
+      forAllUser,
     };
     if (organizer.userRole === "organizer") {
       organizer.events.push(newEvent);
@@ -53,9 +55,9 @@ export const addEvent = async (req, res) => {
       await Promise.all(
         participantsData.map(async (participant) => {
           participant.profile.forEach((profileItem) => {
-            // if (participants.includes(profileItem.name)) {
-            profileItem.events.push(newEvent);
-            // }
+            if (participants.includes(profileItem.name)) {
+              profileItem.events.push(newEvent);
+            }
           });
 
           await participant.save();
@@ -95,6 +97,7 @@ export const editEvent = async (req, res) => {
       startTime,
       endTime,
       repeat,
+      forAllUser,
     } = req.body;
 
     const organizer = await User.findOne({ userId });
@@ -131,6 +134,7 @@ export const editEvent = async (req, res) => {
       repeat,
       eventId,
       userAttendence: false,
+      forAllUser,
     };
 
     // Update events for participants

@@ -8,7 +8,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Video from "react-native-video";
 import { bgImage, bgVideo } from "../constant/images";
 import { Input } from "react-native-elements";
@@ -92,7 +92,9 @@ const SignUpScreen = () => {
     phoneNumber,
   } = state;
   const dispatch = useDispatch();
-  const { userProfileList } = useSelector((state) => state.eventAuth);
+  const { userProfileList, isLoadingSignup } = useSelector(
+    (state) => state.eventAuth
+  );
   const navigation = useNavigation();
   const onHandleSelectProfile = () => {
     navigation.navigate("Login");
@@ -145,9 +147,13 @@ const SignUpScreen = () => {
         phoneNumber: formData.phoneNumber,
       };
       await dispatch(signupAction(newUser));
-      await navigation.navigate("Login");
     } catch (error) {}
   };
+  useEffect(() => {
+    if (isLoadingSignup) {
+      navigation.navigate("Login");
+    }
+  }, [isLoadingSignup]);
   return (
     <View
       style={{
