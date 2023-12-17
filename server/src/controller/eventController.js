@@ -53,9 +53,9 @@ export const addEvent = async (req, res) => {
       await Promise.all(
         participantsData.map(async (participant) => {
           participant.profile.forEach((profileItem) => {
-            if (participants.includes(profileItem.name)) {
-              profileItem.events.push(newEvent);
-            }
+            // if (participants.includes(profileItem.name)) {
+            profileItem.events.push(newEvent);
+            // }
           });
 
           await participant.save();
