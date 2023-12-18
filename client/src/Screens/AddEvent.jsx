@@ -221,7 +221,7 @@ const AddEvent = ({
           eventId: eventId,
           forAllUser: true,
         };
-        console.log(newEvent, "newEvent");
+
         if (isEdit) {
           dispatch(editEventAction(newEvent));
           dispatch(getEventDetailsAction({ userId: userId, id: profileId }));

@@ -127,7 +127,7 @@ function Event() {
       const name = await AsyncStorage.getItem("userName");
       const phoneNumber = await AsyncStorage.getItem("phoneNumber");
       const parentName = await AsyncStorage.getItem("parentName");
-      console.log(checked);
+
       const newAttedence = {
         eventName: state.items.eventName,
         startDate: state.items.startDate,

@@ -28,7 +28,6 @@ const initialState = {
 export const signupAction = createAsyncThunk(
   "eventauth/eventSignup",
   async (body) => {
-    console.log(body);
     const response = await fetch("http://123.63.2.13:3000/auth/signup", {
       method: "POST",
       headers: {
@@ -37,7 +36,7 @@ export const signupAction = createAsyncThunk(
       body: JSON.stringify(body),
     });
     const result = await response.json();
-    console.log(result);
+
     if (result.statuscode === 201) {
       Toast.show({
         type: "SuccessToast",
