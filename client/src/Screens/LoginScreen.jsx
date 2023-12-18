@@ -61,6 +61,7 @@ const LoginScreen = () => {
 
   const onHanldeCreateProfile = (formData) => {
     const loginUser = { email: formData.email, password: formData.password };
+
     // navigation.navigate("CreateProfile");
     dispatch(loginAction(loginUser));
   };

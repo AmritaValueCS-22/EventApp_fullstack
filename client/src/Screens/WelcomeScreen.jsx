@@ -6,12 +6,14 @@ import {
   Text,
   View,
 } from "react-native";
-import React from "react";
+import React, { useEffect } from "react";
 import { bg } from "../constant/images";
 import WelcomeComponent from "../Components/WelcomeComponent";
+import AsyncStorage from "@react-native-community/async-storage";
 
 const WelcomeScreen = () => {
   const { height, width } = Dimensions.get("screen");
+
   return (
     <View
       style={{

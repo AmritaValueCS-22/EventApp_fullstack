@@ -22,11 +22,13 @@ const initialState = {
   isProfileLoading: false,
   eventLoading: false,
   refresh: false,
+  userLoading: false,
 };
 
 export const signupAction = createAsyncThunk(
   "eventauth/eventSignup",
   async (body) => {
+    console.log(body);
     const response = await fetch("http://123.63.2.13:3000/auth/signup", {
       method: "POST",
       headers: {
@@ -35,6 +37,7 @@ export const signupAction = createAsyncThunk(
       body: JSON.stringify(body),
     });
     const result = await response.json();
+    console.log(result);
     if (result.statuscode === 201) {
       Toast.show({
         type: "SuccessToast",
@@ -517,7 +520,7 @@ const eventAuthReducer = createSlice({
       state.loginData = [];
       state.isLoading = false;
       state.userDetails = [];
-      state.eventDetails = [];
+      state.eventDetails = {};
     },
   },
   extraReducers: (builder) => {
@@ -526,7 +529,7 @@ const eventAuthReducer = createSlice({
       state.isLoadingSignup = false;
     });
     builder.addCase(signupAction.fulfilled, (state, action) => {
-      state.isLoadingSignup = true;
+      state.isLoadingSignup = action.payload.statuscode === 400 ? false : true;
     });
     builder.addCase(signupAction.rejected, (state, action) => {
       state.isLoadingSignup = false;
@@ -552,11 +555,16 @@ const eventAuthReducer = createSlice({
     });
     // userDetails
 
-    builder.addCase(getUserDetailsAction.pending, (state) => {});
+    builder.addCase(getUserDetailsAction.pending, (state) => {
+      state.userLoading = true;
+    });
     builder.addCase(getUserDetailsAction.fulfilled, (state, action) => {
       state.userDetails = action.payload;
+      state.userLoading = false;
     });
-    builder.addCase(getUserDetailsAction.rejected, (state, action) => {});
+    builder.addCase(getUserDetailsAction.rejected, (state, action) => {
+      state.userLoading = true;
+    });
     // addEvent
 
     builder.addCase(addEventAction.pending, (state) => {});
@@ -567,14 +575,14 @@ const eventAuthReducer = createSlice({
     // userNames
 
     builder.addCase(getAllNamesAction.pending, (state) => {
-      state.refresh = true;
+      state.refresh = false;
     });
     builder.addCase(getAllNamesAction.fulfilled, (state, action) => {
       state.refresh = false;
       state.profileNames = action.payload.profileNames;
     });
     builder.addCase(getAllNamesAction.rejected, (state, action) => {
-      state.refresh = true;
+      state.refresh = false;
     });
     // attedence
 
@@ -618,8 +626,6 @@ const eventAuthReducer = createSlice({
         const dates = getDifferDate(event.startDate, event.endDate);
         const currentDate = moment().format("YYYY-MM-DD");
         const yesterdayDate = moment().subtract(1, "day").format("YYYY-MM-DD");
-        const startDate = moment(event.startDate).format("YYYY-MM-DD");
-        const userAttedence = ["2023-12-17", "2023-12-18"];
 
         dates.forEach((date) => {
           result[date] = result[date] || [];

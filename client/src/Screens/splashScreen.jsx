@@ -2,12 +2,7 @@ import { Animated, StyleSheet, Text, View } from "react-native";
 import React, { useEffect, useState } from "react";
 import AnimatedLottieView from "lottie-react-native";
 import { useDispatch } from "react-redux";
-import {
-  getAllAttedence,
-  getAllNamesAction,
-  getUserDetailsAction,
-  updateSplash,
-} from "../Redux/slices/EventAuthReducer";
+import { updateSplash } from "../Redux/slices/EventAuthReducer";
 import AsyncStorage from "@react-native-community/async-storage";
 import { useNavigation } from "@react-navigation/native";
 

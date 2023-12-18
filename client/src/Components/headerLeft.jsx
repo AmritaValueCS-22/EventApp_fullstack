@@ -43,8 +43,10 @@ export const HeaderRight = ({ type, set, role }) => {
     setName(names);
   };
   useEffect(() => {
-    getName();
-  }, []);
+    navigation.addListener("focus", () => {
+      getName();
+    });
+  }, [navigation]);
 
   const onLogOut = async () => {
     await AsyncStorage.removeItem("token");
@@ -53,6 +55,7 @@ export const HeaderRight = ({ type, set, role }) => {
     await AsyncStorage.removeItem("userRole");
     await AsyncStorage.removeItem("profileId");
     await AsyncStorage.removeItem("parentName");
+    await AsyncStorage.removeItem("phoneNumber");
     set(false);
     dispatch(logout());
   };
@@ -66,9 +69,10 @@ export const HeaderRight = ({ type, set, role }) => {
     >
       {type === "dashboard" && (
         <Pressable
-          onPress={() =>
-            role === "participant" && navigation.navigate("CreateProfile")
-          }
+          onPress={async () => {
+            // await AsyncStorage.removeItem("userName");
+            role === "participant" && navigation.navigate("CreateProfile");
+          }}
           style={{ marginLeft: 15 }}
         >
           <Avatar.Text
@@ -76,7 +80,7 @@ export const HeaderRight = ({ type, set, role }) => {
             color="#eac084"
             focusable
             size={34}
-            label={role === "participant" ? name.charAt(0).toUpperCase() : "O"}
+            label={role === "participant" ? name?.charAt(0).toUpperCase() : "O"}
           />
         </Pressable>
       )}

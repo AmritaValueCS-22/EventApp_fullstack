@@ -8,27 +8,20 @@ import SignUpScreen from "../Screens/SignUpScreen";
 import LoginScreen from "../Screens/LoginScreen";
 import CreateProfile from "../Screens/CreateProfile";
 import EditProfileScreen from "../Screens/EditProfileScreen";
-
-import Event from "../Screens/Event";
-import UserDashBoard from "../Screens/UserDashBoard";
-import Header from "../Components/Header";
-import { HeaderLeft, HeaderRight } from "../Components/headerLeft";
-import AddEvent from "../Screens/AddEvent";
 import { useSelector } from "react-redux";
 import AsyncStorage from "@react-native-community/async-storage";
 import SplashScreen from "../Screens/splashScreen";
-import LoadingScreen from "../Screens/LoadingScreen";
-import AttedenceScreen from "../Screens/AttedenceScreen";
 import BottomNavigator from "./BottomNavigator";
 import ResetPassword from "../Screens/ResetPassword";
+import NetworkComponent from "../Screens/NetworkComponent";
 
-const StackNaviagator = () => {
+const StackNaviagator = ({ connectionStatus }) => {
   const Tab = createBottomTabNavigator();
   const Stack = createStackNavigator();
   const [isLoggedIn, set] = useState(false);
   const [role, setRole] = useState("");
 
-  const { loginData, showSplash, isLoading, refresh } = useSelector(
+  const { loginData, showSplash, isLoading } = useSelector(
     (state) => state.eventAuth
   );
   const config = {
@@ -59,13 +52,17 @@ const StackNaviagator = () => {
   useEffect(() => {
     readData();
   }, [isLoading]);
+  if (!connectionStatus) {
+    return <NetworkComponent />;
+  }
 
   return (
-    <NavigationContainer linking={linking} fallback={<Text>Loading...</Text>}>
+    <NavigationContainer linking={linking}>
       <Stack.Navigator>
         {isLoggedIn ? (
           <>
-            {loginData.userRole === "participant" && (
+            {(loginData.userRole === "participant" ||
+              role === "participant") && (
               <>
                 <Stack.Screen
                   name="CreateProfile"
@@ -80,7 +77,6 @@ const StackNaviagator = () => {
                 />
               </>
             )}
-
             <Stack.Screen
               name="BottomNavigator"
               children={() => <BottomNavigator set={set} role={role} />}

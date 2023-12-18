@@ -11,7 +11,7 @@ import moment from "moment";
 
 const Calender = ({ onHandleClick, role, logged, showmodel }) => {
   const { eventDetails } = useSelector((state) => state.eventAuth);
-  console.log(eventDetails);
+
   const renderEmptyData = () => {
     return <EmptyScreen title="No Events available " />;
   };
@@ -53,10 +53,11 @@ const Calender = ({ onHandleClick, role, logged, showmodel }) => {
                   fontSize: 12,
                 }}
               >
-                {console.log(item.startDate, "start")}
                 {item?.startTime} - {item?.endTime}
               </Text>
-              <Text style={styles.itemText}>{item.eventName}</Text>
+              <Text style={{ color: "black", fontSize: 16 }}>
+                {item.eventName}
+              </Text>
             </View>
             <View
               style={{

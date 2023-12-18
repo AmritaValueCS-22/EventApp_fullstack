@@ -14,9 +14,10 @@ const AttedenceScreen = ({ attedence, userRole }) => {
       Name: item.name,
       "E.Name": item.eventName,
       StartDate: moment(item.startDate).format("YYYY-MM-DD"),
-      Attendence: item.attedence ? "Yes" : "No",
+      Attendence: item.attedence,
       Reason: item.reason || "-",
       Mobile: item.phoneNumber,
+      "Parent Name": item.parentName,
     }));
   const tableData =
     attedence.length > 0 &&

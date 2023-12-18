@@ -11,8 +11,6 @@ import {
   addEventAction,
   editEventAction,
   getEventDetailsAction,
-  getUserDetailsAction,
-  updateEvents,
 } from "../Redux/slices/EventAuthReducer";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigation, useRoute } from "@react-navigation/native";
@@ -68,7 +66,6 @@ const AddEvent = ({
   const navigation = useNavigation();
   useEffect(() => {
     if (isEdit && item) {
-      console.log(item);
       setValue("eventName", item.eventName);
       set((prev) => ({
         ...prev,
@@ -209,7 +206,7 @@ const AddEvent = ({
       const profileId = await AsyncStorage.getItem("profileId");
       if (value !== null) {
         const eventId = isEdit && item.eventId;
-        console.log(item, eventId, isEdit, "hello");
+
         const newEvent = {
           eventName: formData.eventName,
           participants: participants,
@@ -224,6 +221,7 @@ const AddEvent = ({
           eventId: eventId,
           forAllUser: true,
         };
+        console.log(newEvent, "newEvent");
         if (isEdit) {
           dispatch(editEventAction(newEvent));
           dispatch(getEventDetailsAction({ userId: userId, id: profileId }));

@@ -82,14 +82,11 @@ const SignUpScreen = () => {
       phoneNumber: "",
     },
   });
+
   const {
     isContinued,
-    username,
-    email,
-    password,
-    confirmPassword,
+
     userRole,
-    phoneNumber,
   } = state;
   const dispatch = useDispatch();
   const { userProfileList, isLoadingSignup } = useSelector(
@@ -277,7 +274,7 @@ const SignUpScreen = () => {
                     style={{ fontSize: 15, marginLeft: 5 }}
                     labelStyle={{ fontSize: 15 }}
                     errorMessage={
-                      errors.phonenumber ? errors.phonenumber.message : ""
+                      errors.phoneNumber ? errors.phoneNumber.message : ""
                     }
                   />
                 )}

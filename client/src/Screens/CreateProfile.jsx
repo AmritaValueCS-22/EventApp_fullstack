@@ -30,6 +30,7 @@ import { Input } from "react-native-elements";
 import EditProfileScreen from "./EditProfileScreen";
 import { useNavigation } from "@react-navigation/native";
 import AsyncStorage from "@react-native-community/async-storage";
+import ProfileLoader from "../Components/ProfileLoader";
 
 const CreateProfile = () => {
   const { height, width } = Dimensions.get("screen");
@@ -43,6 +44,7 @@ const CreateProfile = () => {
     isLoading,
     userDetails,
     isProfileLoading,
+    userLoading,
   } = useSelector((state) => state.eventAuth);
 
   const navigation = useNavigation();
@@ -62,10 +64,12 @@ const CreateProfile = () => {
 
     dispatch(createProfileAction(newProfile));
   };
-  const onHandleRemove = (id) => {
+  const onHandleRemove = async (id) => {
+    const userId = await AsyncStorage.getItem("userId");
+
     const deleteProfile = {
       id,
-      userId: loginData.userId,
+      userId: userId,
     };
 
     dispatch(deleteProfileAction(deleteProfile));
@@ -73,6 +77,10 @@ const CreateProfile = () => {
   const readData = async () => {
     try {
       const value = await AsyncStorage.getItem("token");
+
+      if (value !== null) {
+        set(value);
+      }
 
       if (value !== null) {
         set(value);
@@ -86,15 +94,24 @@ const CreateProfile = () => {
       id,
     });
   };
+  const userDetailsFun = async () => {
+    const userId = await AsyncStorage.getItem("userId");
+    dispatch(getUserDetailsAction(userId));
+  };
+  const userDetailsFun2 = async () => {
+    const userId = await AsyncStorage.getItem("userId");
+    dispatch(getUserDetailsAction(userId));
+    readData();
+  };
   useEffect(() => {
-    dispatch(getUserDetailsAction(loginData.userId));
+    userDetailsFun();
   }, [isProfileLoading]);
   useEffect(() => {
     navigation.addListener("focus", () => {
-      dispatch(getUserDetailsAction(loginData.userId));
-      readData();
+      userDetailsFun2();
     });
   }, [navigation]);
+
   const onHanldeOpneProfile = async (name, id, parentName) => {
     if (name !== undefined) {
       await AsyncStorage.setItem(
@@ -147,130 +164,134 @@ const CreateProfile = () => {
               flex: 0.6,
             }}
           >
-            <View style={{ flex: 0.4, alignItems: "center" }}>
-              <Text
-                style={{
-                  fontSize: 15,
-                  fontWeight: 700,
-                  color: "black",
-                  marginVertical: 20,
-                }}
-              >
-                How many{"   "}
+            <>
+              <View style={{ flex: 0.4, alignItems: "center" }}>
                 <Text
                   style={{
+                    fontSize: 15,
+                    fontWeight: 700,
                     color: "black",
-                    fontSize: 25,
-                    fontWeight: 800,
+                    marginVertical: 20,
                   }}
                 >
-                  Profiles ?
+                  How many{"   "}
+                  <Text
+                    style={{
+                      color: "black",
+                      fontSize: 25,
+                      fontWeight: 800,
+                    }}
+                  >
+                    Profiles ?
+                  </Text>
                 </Text>
-              </Text>
-              <View
-                style={{
-                  height: "100%",
-                  width: 300,
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                  flexWrap: "wrap",
-                  marginTop: 10,
-                }}
-              >
-                {userDetails?.user?.profile?.map((item, index) => {
-                  return (
-                    <Pressable style={{ position: "relative" }} key={index}>
-                      <View
-                        style={{
-                          marginHorizontal: 20,
-                          marginVertical: 10,
-                          alignItems: "center",
-                        }}
-                      >
-                        <Pressable
-                          onPress={() =>
-                            onHanldeOpneProfile(
-                              item.name,
-                              item.id,
-                              item.parentName
-                            )
-                          }
-                        >
-                          <Avatar.Image
-                            style={{ elevation: 10, shadowColor: "green" }}
-                            size={70}
-                            source={user}
+                <View
+                  style={{
+                    height: "100%",
+                    width: 300,
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    flexWrap: "wrap",
+                    marginTop: 10,
+                  }}
+                >
+                  {userLoading && <ProfileLoader />}
+                  {!userLoading &&
+                    userDetails?.user?.profile?.map((item, index) => {
+                      return (
+                        <Pressable style={{ position: "relative" }} key={index}>
+                          <View
+                            style={{
+                              marginHorizontal: 20,
+                              marginVertical: 10,
+                              alignItems: "center",
+                            }}
+                          >
+                            <Pressable
+                              onPress={() =>
+                                onHanldeOpneProfile(
+                                  item.name,
+                                  item.id,
+                                  item.parentName
+                                )
+                              }
+                            >
+                              <Avatar.Image
+                                style={{ elevation: 10, shadowColor: "green" }}
+                                size={70}
+                                source={user}
+                              />
+                            </Pressable>
+                            <Text
+                              style={{
+                                color: "grey",
+                                fontWeight: 700,
+                                textTransform: "capitalize",
+                                marginVertical: 6,
+                                color: "#A25C02",
+                              }}
+                            >
+                              {item.name === undefined ? "user" : item.name}
+                            </Text>
+                          </View>
+                          <Ionicons
+                            onPress={() => onHandleRemove(item.id)}
+                            name="close"
+                            size={20}
+                            color={"black"}
+                            style={{ position: "absolute", right: 0 }}
+                          />
+                          <AntDesign
+                            onPress={() => onEditProfile(index + 1)}
+                            name="edit"
+                            size={20}
+                            color={"black"}
+                            style={{ position: "absolute", right: 1, top: 55 }}
                           />
                         </Pressable>
-                        <Text
-                          style={{
-                            color: "grey",
-                            fontWeight: 700,
-                            textTransform: "capitalize",
-                            marginVertical: 6,
-                            color: "#A25C02",
-                          }}
-                        >
-                          {item.name === undefined ? "user" : item.name}
-                        </Text>
-                      </View>
-                      <Ionicons
-                        onPress={() => onHandleRemove(item.id)}
-                        name="close"
-                        size={20}
-                        color={"black"}
-                        style={{ position: "absolute", right: 0 }}
-                      />
-                      <AntDesign
-                        onPress={() => onEditProfile(index + 1)}
-                        name="edit"
-                        size={20}
-                        color={"black"}
-                        style={{ position: "absolute", right: 1, top: 55 }}
-                      />
-                    </Pressable>
-                  );
-                })}
+                      );
+                    })}
+                </View>
               </View>
-            </View>
-            <View
-              style={{
-                flex: 0.3,
-                height: 60,
-
-                alignItems: "center",
-              }}
-            >
-              <Pressable
+              <View
                 style={{
-                  width: width - 50,
-                  flexDirection: "row",
+                  flex: 0.3,
+                  height: 60,
+
                   alignItems: "center",
-                  justifyContent: "center",
-                  backgroundColor: "#eebf80",
-                  paddingBottom: 5,
-                  borderRadius: 40,
                 }}
-                onPress={onCreateProfile}
               >
-                <Ionicons
-                  style={{ marginHorizontal: 5, paddingTop: 10 }}
-                  color={"white"}
-                  name="person-add"
-                  size={20}
-                />
-                <Text
+                <Pressable
                   style={{
-                    color: "white",
-                    fontWeight: 800,
-                    fontSize: 15,
-                    paddingTop: 10,
+                    width: width - 50,
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    backgroundColor: "#eebf80",
+                    paddingBottom: 5,
+                    borderRadius: 40,
                   }}
+                  onPress={onCreateProfile}
                 >
-                  Add Profile
-                </Text>
-              </Pressable>
-            </View>
+                  <Ionicons
+                    style={{ marginHorizontal: 5, paddingTop: 10 }}
+                    color={"white"}
+                    name="person-add"
+                    size={20}
+                  />
+                  <Text
+                    style={{
+                      color: "white",
+                      fontWeight: 800,
+                      fontSize: 15,
+                      paddingTop: 10,
+                    }}
+                  >
+                    Add Profile
+                  </Text>
+                </Pressable>
+              </View>
+            </>
           </View>
         </ImageBackground>
       </View>
