@@ -11,6 +11,7 @@ const attedenceSchema = new mongoose.Schema({
   id: { type: String, require: true },
   eventId: { type: String },
   name: { type: String },
+  parentName: { type: String },
   phoneNumber: { type: String, required: true, match: /^[0-9]{10}$/ },
 });
 

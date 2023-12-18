@@ -31,7 +31,7 @@ export const attendanceUpdate = async (req, res) => {
       if (item.id === id) {
         const attendanceObject = {
           eventName,
-          attendance,
+          attendence: attendance,
           reason,
           startDate,
           endDate,
